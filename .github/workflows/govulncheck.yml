@@ -1,0 +1,21 @@
+# This is a master audit workflow for Go security scanning
+#
+# It's impored by Go projects to scan scource code against open CVEs
+#
+# --- TEST VERSION ---
+
+name: Security Audit Workflow
+
+on:
+  workflow_call:
+
+jobs:
+  security_audit:
+    runs-on: ubuntu-latest
+    name: Run govulncheck
+    steps:
+        - uses: golang/govulncheck-action@v1
+          with:
+            go-version-input: 'stable'
+            check-latest: true
+            go-package: ./...
