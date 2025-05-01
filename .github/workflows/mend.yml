@@ -48,6 +48,7 @@ jobs:
       - name: Scan and upload
         env:
           WS_URL: "https://f5.whitesourcesoftware.com/agent"
+          WS_APIKEY_NGINX: ${{ secrets.WS_APIKEY_NGINX }}        
           PRODUCT_NAME: nginx-tiger-demo1_${{ inputs.branch && inputs.branch || github.ref_name }}
           PROJECT_NAME: tiger-demo1
         run: |
