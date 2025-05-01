@@ -46,4 +46,5 @@ jobs:
         env:
           PRODUCT_NAME: nginx_tiger_demo_workflow${{ inputs.branch && inputs.branch || github.ref_name }}
           PROJECT_NAME: tiger_demo_1
-        run: java -jar wss-unified-agent.jar -noConfig true -wss.url ${{ secrets.WS_URL }} -apiKey ${{ secrets.WS_APIKEY_NGINX }} -product $PRODUCT_NAME -project $PROJECT_NAME -d .
+        run: java -jar wss-unified-agent.jar -noConfig true -wss.url https://f5.whitesourcesoftware.com/agent -apiKey ${{ secrets.WS_APIKEY_NGINX }} -product $PRODUCT_NAME -project $PROJECT_NAME -d .
+        
