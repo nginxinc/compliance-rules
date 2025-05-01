@@ -44,6 +44,7 @@ jobs:
 
       - name: Scan and upload
         env:
-          PRODUCT_NAME: nginx-tiger-demo-1_${{ inputs.branch && inputs.branch || github.ref_name }}
-          PROJECT_NAME: tiger-demo-1
+          PRODUCT_NAME: nginx-tiger-demo1_${{ inputs.branch && inputs.branch || github.ref_name }}
+          PROJECT_NAME: tiger-demo1
         run: java -jar wss-unified-agent.jar -noConfig true -wss.url https://f5.whitesourcesoftware.com/agent -apiKey ${{ secrets.WS_APIKEY_NGINX }} -product $PRODUCT_NAME -project $PROJECT_NAME -d .
+        
