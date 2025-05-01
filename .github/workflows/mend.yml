@@ -13,11 +13,11 @@ on:
         type: string
         required: false
         default: main
-  workflow_call:
-    inputs:
-     branch:
-       type: string
-       required: true
+  # workflow_call:
+  #   inputs:
+  #    branch:
+  #      type: string
+  #      required: true
 
 concurrency:
   group: ${{ github.ref_name }}-mend
