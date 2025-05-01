@@ -14,6 +14,9 @@ on:
         required: false
         default: main
   workflow_call:
+    secrets:
+      WS_APIKEY_NGINX:
+        required: true    
     # inputs:
     #  branch:
     #    type: string
@@ -47,5 +50,11 @@ jobs:
           WS_URL: "https://f5.whitesourcesoftware.com/agent"
           PRODUCT_NAME: nginx-tiger-demo1_${{ inputs.branch && inputs.branch || github.ref_name }}
           PROJECT_NAME: tiger-demo1
-        run: java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_URL -apiKey ${{ secrets.WS_TOKEN }} -product $PRODUCT_NAME -project $PROJECT_NAME -d .
-        
+        run: |
+          if [ -z "$WS_APIKEY_NGINX" ]; then
+            echo "Secret is empty"
+              exit 1
+            else
+              echo "Secret is available"
+          fi          
+          java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_URL -apiKey $WS_APIKEY_NGINX -product $PRODUCT_NAME -project $PROJECT_NAME -d .
