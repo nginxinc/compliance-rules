@@ -53,7 +53,7 @@ jobs:
           java -jar wss-unified-agent.jar \
           -noConfig true \
           -wss.url https://api.whitesourcesoftware.com/agent \
-          -apiKey ${{ secrets.WSS_API_KEY }} \
+          -apiKey ${{ secrets.WS_APIKEY }} \
           -product "${{ env.PRODUCT_NAME }}" \
           -project "${{ env.PROJECT_NAME }}" \
           -d .
