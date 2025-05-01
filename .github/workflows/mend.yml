@@ -45,8 +45,16 @@ jobs:
       - name: Scan and upload
         env:
           WS_WSS_URL: "https://f5.whitesourcesoftware.com/agent"
-          WS_APIKEY: "${{ secrets.WS_TOKEN }}"
+          WS_APIKEY: "${{ secrets.WS_APIKEY_NGINX }}"
           PRODUCT_NAME: nginx-tiger-demo1_${{ inputs.branch && inputs.branch || github.ref_name }}
           PROJECT_NAME: tiger-demo1
-        run: java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_WSS_URL -apiKey $WS_APIKEY -product $PRODUCT_NAME -project $PROJECT_NAME -d .
+        #run: java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_WSS_URL -apiKey $WS_APIKEY -product $PRODUCT_NAME -project $PROJECT_NAME -d .
+        run: |
+          java -jar wss-unified-agent.jar \
+          -noConfig true \
+          -wss.url https://api.whitesourcesoftware.com/agent \
+          -apiKey ${{ secrets.WSS_API_KEY }} \
+          -product "${{ env.PRODUCT_NAME }}" \
+          -project "${{ env.PROJECT_NAME }}" \
+          -d .
         
