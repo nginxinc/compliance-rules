@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-    #paths-ignore:
-    #  - site/**
-    #  - examples/**
+    paths-ignore:
+     - site/**
+     - examples/**
   workflow_dispatch:
     inputs:
       branch:
@@ -14,10 +14,10 @@ on:
         required: false
         default: main
   workflow_call:
-    #inputs:
-    #  branch:
-    #    type: string
-    #    required: true
+    inputs:
+     branch:
+       type: string
+       required: true
 
 concurrency:
   group: ${{ github.ref_name }}-mend
@@ -45,5 +45,5 @@ jobs:
       - name: Scan and upload
         env:
           PRODUCT_NAME: nginx-tiger-demo-1_${{ inputs.branch && inputs.branch || github.ref_name }}
-          PROJECT_NAME: tiger_demo_1
+          PROJECT_NAME: tiger-demo-1
         run: java -jar wss-unified-agent.jar -noConfig true -wss.url https://f5.whitesourcesoftware.com/agent -apiKey ${{ secrets.WS_APIKEY_NGINX }} -product $PRODUCT_NAME -project $PROJECT_NAME -d .
