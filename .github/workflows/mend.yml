@@ -11,7 +11,7 @@ on:
    inputs:
      branch:
        type: string
-       required: false
+       required: true
        default: main
   workflow_call:
     secrets:
@@ -20,7 +20,7 @@ on:
     inputs:
      branch:
       type: string
-      required: false
+      required: true
       default: main
 
 concurrency:
