@@ -18,10 +18,12 @@ on:
       WS_APIKEY_NGINX:
         required: true    
     inputs:
-     branch:
-      type: string
-      required: true
-      default: main
+      product_name:
+        type: string
+        required: true        
+      project_name:
+        required: true
+        type: string
 
 concurrency:
   group: ${{ github.ref_name }}-mend
@@ -37,8 +39,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ inputs.branch && inputs.branch || github.ref }}
+        # with:
+        #   ref: ${{ inputs.branch && inputs.branch || github.ref }}
 
       - name: Download agent
         run: curl -fsSLJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
@@ -49,10 +51,10 @@ jobs:
       - name: Scan and upload
         env:
           WS_URL: "https://f5.whitesourcesoftware.com/agent"
-          WS_APIKEY_NGINX: ${{ secrets.WS_APIKEY_NGINX }}        
-          PRODUCT_NAME: nginx-tiger-demo1_${{ inputs.branch && inputs.branch || github.ref_name }}
-          PROJECT_NAME: tiger-demo1
-          WS_PROJECT: tiger-demo1
+          WS_APIKEY_NGINX: ${{ inputs.WS_APIKEY_NGINX }}        
+          PRODUCT_NAME: ${{ inputs.product_name}}
+          PROJECT_NAME: ${{ inputs.project_name}}
+          
         run: |
           if [ -z "$WS_APIKEY_NGINX" ]; then
             echo "Secret is empty"
