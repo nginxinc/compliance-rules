@@ -17,10 +17,11 @@ on:
     secrets:
       WS_APIKEY_NGINX:
         required: true    
-    # inputs:
-    #  branch:
-    #    type: string
-    #    required: true
+    inputs:
+     branch:
+      type: string
+      required: false
+      default: main
 
 concurrency:
   group: ${{ github.ref_name }}-mend
