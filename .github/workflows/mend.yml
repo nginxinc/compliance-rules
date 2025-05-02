@@ -58,4 +58,6 @@ jobs:
             else
               echo "Secret is available"
           fi          
-          java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_URL -apiKey $WS_APIKEY_NGINX -product $PRODUCT_NAME -project $PROJECT_NAME -d .
+          java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_URL -apiKey $WS_APIKEY_NGINX -product $PRODUCT_NAME -project $PROJECT_NAME -d ./
+          exit_code=$?
+      
