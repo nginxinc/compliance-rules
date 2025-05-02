@@ -52,6 +52,7 @@ jobs:
           WS_APIKEY_NGINX: ${{ secrets.WS_APIKEY_NGINX }}        
           PRODUCT_NAME: nginx-tiger-demo1_${{ inputs.branch && inputs.branch || github.ref_name }}
           PROJECT_NAME: tiger-demo1
+          WS_PROJECT: $PROJECT_NAME
         run: |
           if [ -z "$WS_APIKEY_NGINX" ]; then
             echo "Secret is empty"
@@ -61,4 +62,8 @@ jobs:
           fi          
           java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_URL -apiKey $WS_APIKEY_NGINX -product $PRODUCT_NAME -project $PROJECT_NAME -d ./
           exit_code=$?
+
+          file=$(find . -type f -regex ".*/${WS_PROJECT}.*scan_report\.json" | head -n 1)
+          echo -e "\nFound Mend scan log file - $file\n"
+
       
