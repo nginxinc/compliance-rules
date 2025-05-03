@@ -51,7 +51,7 @@ jobs:
       - name: Scan and upload
         env:
           WS_URL: "https://f5.whitesourcesoftware.com/agent"
-          WS_APIKEY_NGINX: ${{ inputs.WS_APIKEY_NGINX }}        
+          WS_APIKEY_NGINX: ${{ secrets.WS_APIKEY_NGINX }}        
           PRODUCT_NAME: ${{ inputs.product_name}}
           PROJECT_NAME: ${{ inputs.project_name}}
           
