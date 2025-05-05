@@ -54,6 +54,11 @@ jobs:
           WS_APIKEY_NGINX: ${{ secrets.WS_APIKEY_NGINX }}        
           PRODUCT_NAME: ${{ inputs.product_name}}
           PROJECT_NAME: ${{ inputs.project_name}}
+          WS_CHECKPOLICIES: true
+          WS_FORCECHECKALLDEPENDENCIES: true
+          WS_GENERATESCANREPORT: true
+          WS_FORCEUPDATE: true
+          WS_FORCEUPDATE_FAILBUILDONPOLICYVIOLATION: true
           
         run: |
           if [ -z "$WS_APIKEY_NGINX" ]; then
