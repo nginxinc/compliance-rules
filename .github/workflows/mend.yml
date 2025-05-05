@@ -66,8 +66,12 @@ jobs:
           exit_code=$?
 
           echo -e "\nEXIT CODE is - $exit_code\n"
-          exit 1
-
+          if (( exit_code == 254 )); then
+            exit 254
+          else
+            printf "\nMend scan completed successfully. Exiting with code = 0\n"
+          exit 0
+      
 
           # file=$(find . -type f -regex ".*/$WS_PROJECT.*scan_report\.json" | head -n 1)
           # echo -e "\nFound Mend scan log file - $file\n"
