@@ -16,6 +16,8 @@ on:
   workflow_call:
     secrets:
       WS_APIKEY_NGINX:
+        required: true
+      WS_USER_KEY:
         required: true    
     inputs:
       product_name:
@@ -59,6 +61,7 @@ jobs:
           WS_GENERATESCANREPORT: true
           WS_FORCEUPDATE: true
           WS_FORCEUPDATE_FAILBUILDONPOLICYVIOLATION: true
+          WS_USER_KEY: ${{ secrets.WS_USER_KEY }}
           
         run: |
           if [ -z "$WS_APIKEY_NGINX" ]; then
@@ -70,7 +73,7 @@ jobs:
           java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_URL -apiKey $WS_APIKEY_NGINX -product $PRODUCT_NAME -project $PROJECT_NAME -d ./
           exit_code=$?
 
-          echo -e "\nEXIT CODE is - $exit_code\n"
+          echo -e "\nEXIT CODE is: $exit_code\n"
           if (( exit_code == 254 )); then
             exit 254
           else
