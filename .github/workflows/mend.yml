@@ -97,3 +97,18 @@ jobs:
         shell: bash
         run: |
           echo Dummy check mend report...
+
+  upload:
+    name: Archive mend scan report
+    needs: parse
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Prepare mend archive
+        shell: bash
+        run: |
+          echo Archiving mend report
+
+      - name: Upload mend archive
+        shell: bash
+        run: |
+          echo Uploading mend archive to...
