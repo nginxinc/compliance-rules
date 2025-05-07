@@ -100,6 +100,11 @@ jobs:
               exit 1
             else
               echo "User Key is available"
+          fi
+
+          if [ -z "$PRODUCT_NAME" || -z "$PROJECT_NAME"]; then
+            echo "Name is empty"
+              exit 1            
           fi    
 
           java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_URL -apiKey $WS_APIKEY_NGINX -userKey $WS_USER_KEY -product $PRODUCT_NAME -project $PROJECT_NAME -d ./
@@ -112,7 +117,7 @@ jobs:
             printf "\nMend scan completed successfully. Exiting with code = 0\n"
             exit 0
           fi
-          
+
   parse:
     name: Parse mend report
     needs: scan
