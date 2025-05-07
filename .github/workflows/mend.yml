@@ -88,24 +88,15 @@ jobs:
           WS_USER_KEY: ${{ secrets.WS_USER_KEY }}
           
         run: |
-          if [ -z "$WS_APIKEY_NGINX" ]; then
+          if [ -z "$WS_APIKEY_NGINX" ] || [ -z "$WS_USER_KEY" ]; then
             echo "Secret is empty"
-              exit 1
-            else
-              echo "Secret is available"
-          fi
-
-          if [ -z "$WS_USER_KEY" ]; then
-            echo "User Key is empty"
-              exit 1
-            else
-              echo "User Key is available"
-          fi
-
-          if [ -z "$PRODUCT_NAME" || -z "$PROJECT_NAME"]; then
-            echo "Name is empty"
               exit 1            
-          fi    
+          fi
+
+          if [ -z "$PRODUCT_NAME" ] || [ -z "$PROJECT_NAME" ]; then
+            echo "Project Name is empty"
+            exit 1
+          fi
 
           java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_URL -apiKey $WS_APIKEY_NGINX -userKey $WS_USER_KEY -product $PRODUCT_NAME -project $PROJECT_NAME -d ./
           exit_code=$?
