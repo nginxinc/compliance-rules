@@ -78,7 +78,7 @@ jobs:
               echo "User Key is available"
           fi    
 
-          java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_URL -apiKey $WS_APIKEY_NGINX -product $PRODUCT_NAME -project $PROJECT_NAME -d ./
+          java -jar wss-unified-agent.jar -noConfig true -wss.url $WS_URL -apiKey $WS_APIKEY_NGINX -userKey $WS_USERKEY -product $PRODUCT_NAME -project $PROJECT_NAME -d ./
           exit_code=$?
 
           echo -e "\nEXIT CODE is: $exit_code\n"
