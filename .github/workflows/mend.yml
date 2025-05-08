@@ -116,13 +116,17 @@ jobs:
           fi
 
       - name: Check if report is generated
+        id: report
         shell: bash
         run: |
-          #file=$(find . -type f -regex "whitesource/${PROJECT_NAME}.*scan_report\.json" | head -n 1)
-          #echo -e "\nFound Mend scan log file - $file\n"
-          pwd
           ls -lt whitesource/
-          find whitesource -type f -name '*scan_report*.json'
+          find whitesource -type f -name "${PROJECT_NAME}*scan_report.json"
+          echo "mend-report=$(find whitesource -type f -name "${PROJECT_NAME}*scan_report.json" | head -n 1)" >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
+
+      - name: Print scan report
+        run: |
+          cat {{ steps.report.mend-report }} | jq .
 
   upload:
     name: Archive mend scan report
