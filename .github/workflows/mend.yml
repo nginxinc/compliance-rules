@@ -117,7 +117,7 @@ jobs:
       - name: Check if report is generated
         shell: bash
         run: |
-          file=$(find . -type f -regex ".*/${WS_PROJECT}.*scan_report\.json" | head -n 1)
+          file=$(find . -type f -regex ".*/$PROJECT_NAME.*scan_report\.json" | head -n 1)
           echo -e "\nFound Mend scan log file - $file\n"
 
 
