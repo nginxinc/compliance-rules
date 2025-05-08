@@ -115,11 +115,6 @@ jobs:
             exit 0
           fi
 
-  parse:
-    name: Parse mend report
-    needs: scan
-    runs-on: ubuntu-22.04
-    steps:
       - name: Check if report is generated
         shell: bash
         run: |
@@ -129,7 +124,7 @@ jobs:
 
   upload:
     name: Archive mend scan report
-    needs: parse
+    needs: scan
     runs-on: ubuntu-22.04
     steps:
       - name: Prepare mend archive
