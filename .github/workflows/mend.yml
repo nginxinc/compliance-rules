@@ -121,12 +121,12 @@ jobs:
         run: |
           ls -lt whitesource/
           find whitesource -type f -name "${PROJECT_NAME}*scan_report.json"
-          echo "mend-report=$(find whitesource -type f -name "${PROJECT_NAME}*scan_report.json" | head -n 1)" >> $GITHUB_OUTPUT
+          echo "mend-report-file=$(find whitesource -type f -name "${PROJECT_NAME}*scan_report.json" | head -n 1)" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
 
       - name: Print scan report
         run: |
-          cat {{ steps.report.mend-report }} | jq .
+          cat ${{ steps.report.mend-report-file }} | jq .
 
   upload:
     name: Archive mend scan report
