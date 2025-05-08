@@ -118,9 +118,10 @@ jobs:
       - name: Check if report is generated
         shell: bash
         run: |
-          file=$(find . -type f -regex ".whitesource/${PROJECT_NAME}.*scan_report\.json" | head -n 1)
-          echo -e "\nFound Mend scan log file - $file\n"
-          ls -lt .whitesource/
+          #file=$(find . -type f -regex ".whitesource/${PROJECT_NAME}.*scan_report\.json" | head -n 1)
+          #echo -e "\nFound Mend scan log file - $file\n"
+          pwd
+          ls -lt
 
   upload:
     name: Archive mend scan report
