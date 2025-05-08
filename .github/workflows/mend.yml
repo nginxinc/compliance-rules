@@ -92,7 +92,7 @@ jobs:
           WS_FORCEUPDATE_FAILBUILDONPOLICYVIOLATION: true
           
         run: |
-          if [ -z "${{ secrets.WS_APIKEY_NGINX }}" ] || [ -z "${{ secrets.WS_USER_KEY }}" ]; then
+          if [ -z ${{ secrets.WS_APIKEY_NGINX }} ] || [ -z ${{ secrets.WS_USER_KEY }} ]; then
             echo "Secret is empty"
               exit 1            
           fi
