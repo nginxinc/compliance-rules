@@ -129,7 +129,7 @@ jobs:
       - name: Print scan report
         id: print
         run: |
-          echo "mend-report=$(cat ${{ steps.report.outputs.mend-report-file }} | jq .)" >> $GITHUB_OUTPUT
+          cat ${{ steps.report.outputs.mend-report-file }} | jq .
 
   upload:
     name: Archive mend scan report
