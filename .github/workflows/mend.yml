@@ -68,6 +68,8 @@ jobs:
     name: Mend
     runs-on: ubuntu-22.04
     #needs: check-if-allowed
+    outputs:
+      mend-report-file: ${{ steps.report.mend-report-file }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -125,6 +127,7 @@ jobs:
           cat $GITHUB_OUTPUT
 
       - name: Print scan report
+        id: print
         run: |
           cat ${{ steps.report.mend-report-file }} | jq .
 
