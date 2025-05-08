@@ -121,8 +121,6 @@ jobs:
         id: report
         shell: bash
         run: |
-          ls -lt whitesource/
-          find whitesource -type f -name "${PROJECT_NAME}*scan_report.json"
           echo "mend-report-file=$(find whitesource -type f -name "${PROJECT_NAME}*scan_report.json" | head -n 1)" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
 
@@ -134,21 +132,6 @@ jobs:
       - name: Store mend report
         uses: actions/upload-artifact@v4
         with:
-          name: mend-report
+          name: mend-scan-report
           path: whitesource
           retention-days: 14
-
-  upload:
-    name: Archive mend scan report
-    needs: scan
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Prepare mend archive
-        shell: bash
-        run: |
-          echo Archiving mend report
-
-      - name: Upload mend archive
-        shell: bash
-        run: |
-          echo Uploading mend archive to...
