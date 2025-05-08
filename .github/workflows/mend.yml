@@ -14,11 +14,7 @@ on:
        required: true
        default: main
   workflow_call:
-    secrets:
-      WS_APIKEY_NGINX:
-        required: true
-      WS_USER_KEY:
-        required: true
+
     inputs:
       product_name:
         type: string
@@ -85,7 +81,8 @@ jobs:
       - name: Scan and upload
         env:
           WS_URL: "https://f5.whitesourcesoftware.com/agent"
-          WS_APIKEY_NGINX: ${{ secrets.WS_APIKEY_NGINX }}        
+          WS_APIKEY_NGINX: ${{ secrets.WS_APIKEY_NGINX }}
+          WS_USER_KEY: ${{ secrets.WS_USER_KEY }}
           PRODUCT_NAME: ${{ inputs.product_name}}
           PROJECT_NAME: ${{ inputs.project_name}}
           WS_CHECKPOLICIES: true
@@ -93,7 +90,6 @@ jobs:
           WS_GENERATESCANREPORT: true
           WS_FORCEUPDATE: true
           WS_FORCEUPDATE_FAILBUILDONPOLICYVIOLATION: true
-          WS_USER_KEY: ${{ secrets.WS_USER_KEY }}
           
         run: |
           if [ -z "$WS_APIKEY_NGINX" ] || [ -z "$WS_USER_KEY" ]; then
