@@ -131,6 +131,13 @@ jobs:
         run: |
           cat ${{ steps.report.outputs.mend-report-file }} | jq .
 
+      - name: Store mend report
+        uses: actions/upload-artifact@v2
+        with:
+          name: Mend
+          path: whitesource
+          retention-days: 14
+
   upload:
     name: Archive mend scan report
     needs: scan
