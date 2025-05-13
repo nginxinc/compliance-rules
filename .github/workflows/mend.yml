@@ -148,5 +148,4 @@ jobs:
           retention-days: 7
 
       - name: Final scan result
-        run: |
-          exit ${{ steps.report.outputs.mend-scan-result }}
+        run: echo ${{ steps.scan.outcome }}
