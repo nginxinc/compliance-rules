@@ -138,12 +138,12 @@ jobs:
           retention-days: 7
 
       - name: Final scan result
-        if: ${{ steps.scan.outcome }} == 'failure'
+        if: ${{ steps.scan.outcome == 'failure' }} 
         run: |
           printf "\nSCA scan detected vulnerabilities.\n"
           exit 1
 
       - name: Final scan result
-        if: ${{ steps.scan.outcome }} == 'success'
+        if: ${{ steps.scan.outcome == 'success' }} 
         run: |          
           exit 0
