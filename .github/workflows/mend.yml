@@ -148,4 +148,7 @@ jobs:
           retention-days: 7
 
       - name: Final scan result
-        run: echo ${{ steps.scan.outcome }}
+        if: ${{ steps.scan.outcome }} == "failure"
+        run: |
+          printf "\nMend scan detected problems.\n"
+          exit 1
