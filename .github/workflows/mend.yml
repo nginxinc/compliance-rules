@@ -145,4 +145,8 @@ jobs:
         with:
           name: mend-scan-report
           path: whitesource
-          retention-days: 14
+          retention-days: 7
+
+      - name: Final scan result
+        run: |
+          exit ${{ steps.report.outputs.mend-scan-result }}
