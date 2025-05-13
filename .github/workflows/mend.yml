@@ -113,23 +113,13 @@ jobs:
           exit_code=$?
 
           echo "mend-scan-result=$(echo $exit_code)" >> $GITHUB_OUTPUT
-          echo -e "\nEXIT CODE is: $exit_code\n"
-
-          # if (( exit_code != 254 )); then
-          #   printf "\nMend scan detected problems.\n"
-          #   exit 0
-          # #  exit 254
-          # else
-          #   printf "\nMend scan completed successfully. Exiting with code = 0\n"
-          #   exit 0
-          # fi
+          echo -e "\nEXIT CODE is: $exit_code\n"         
 
       - name: Check if report is generated
         if: success() || steps.scan.conclusion == 'failure'
         id: report
         shell: bash
         run: |
-          echo "Scan conclusion: ${{ steps.scan.conclusion }}"
           echo "mend-report-file=$(find whitesource -type f -name "${PROJECT_NAME}*scan_report.json" | head -n 1)" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
 
@@ -137,8 +127,6 @@ jobs:
         if: success() || steps.scan.conclusion == 'failure'
         id: print
         run: |
-          echo "Scan conclusion: ${{ steps.scan.conclusion }}"
-          echo "Scan Outcome: ${{ steps.scan.outcome }}"
           cat ${{ steps.report.outputs.mend-report-file }} | jq .
 
       - name: Store mend report
@@ -150,7 +138,12 @@ jobs:
           retention-days: 7
 
       - name: Final scan result
-        if: ${{ steps.scan.outcome }} == "failure"
+        if: ${{ steps.scan.outcome }} == 'failure'
         run: |
-          printf "\nMend scan detected problems.\n"
+          printf "\nSCA scan detected vulnerabilities.\n"
           exit 1
+
+      - name: Final scan result
+        if: ${{ steps.scan.outcome }} == 'success'
+        run: |          
+          exit 0
