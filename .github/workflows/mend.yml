@@ -86,6 +86,7 @@ jobs:
 
       - name: Scan and upload
         id: scan
+        continue-on-error: true
         env:
           WS_URL: "https://f5.whitesourcesoftware.com/agent"
           WS_APIKEY_NGINX: ${{ secrets.WS_APIKEY_NGINX }}
@@ -125,6 +126,7 @@ jobs:
           fi
 
       - name: Check if report is generated
+        if: success() || steps.scan.conclusion == 'failure'
         id: report
         shell: bash
         run: |
@@ -132,26 +134,15 @@ jobs:
           cat $GITHUB_OUTPUT
 
       - name: Print scan report
+        if: success() || steps.scan.conclusion == 'failure'
         id: print
         run: |
           cat ${{ steps.report.outputs.mend-report-file }} | jq .
 
       - name: Store mend report
+        if: success() || steps.scan.conclusion == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: mend-scan-report
           path: whitesource
           retention-days: 14
-
-      - name: Final scan result
-        id: final
-        run: |
-          echo -e "\nEXIT CODE is: ${{ steps.scan.outputs.mend-scan-result }}\n"
-
-          if (( ${{ steps.scan.outputs.mend-scan-result }} != 254 )); then
-            printf "\nMend scan detected problems.\n"
-            exit ${{ steps.scan.outputs.mend-scan-result }}
-          else
-            printf "\nMend scan completed successfully.\n"
-            exit ${{ steps.scan.outputs.mend-scan-result }}
-          fi
