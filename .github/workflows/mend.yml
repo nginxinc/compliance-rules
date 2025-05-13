@@ -115,7 +115,7 @@ jobs:
           echo "mend-scan-result=$(echo $exit_code)" >> $GITHUB_OUTPUT
           echo -e "\nEXIT CODE is: $exit_code\n"
 
-          if (( exit_code == 254 )); then
+          if (( exit_code != 254 )); then
             printf "\nMend scan detected problems.\n"
             exit 0
           #  exit 254
@@ -148,10 +148,10 @@ jobs:
         run: |
           echo -e "\nEXIT CODE is: ${{ steps.scan.outputs.mend-scan-result }}\n"
 
-          if (( ${{ steps.scan.outputs.mend-scan-result }} == 254 )); then
+          if (( ${{ steps.scan.outputs.mend-scan-result }} != 254 )); then
             printf "\nMend scan detected problems.\n"
-            exit 254
+            exit ${{ steps.scan.outputs.mend-scan-result }}
           else
-            printf "\nMend scan completed successfully. Exiting with code = 0\n"
-            exit 0
+            printf "\nMend scan completed successfully.\n"
+            exit ${{ steps.scan.outputs.mend-scan-result }}
           fi
