@@ -14,12 +14,6 @@ on:
        required: true
        default: main
   workflow_call:
-    secrets:
-      WS_APIKEY_NGINX:
-        required: true
-      WS_USER_KEY:
-        required: true
-
     inputs:
       product_name:
         type: string
