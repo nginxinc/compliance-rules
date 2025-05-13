@@ -100,9 +100,9 @@ jobs:
           WS_FORCEUPDATE_FAILBUILDONPOLICYVIOLATION: true
           
         run: |
-          if [ -z ${{ secrets.WS_APIKEY_NGINX }} ] || [ -z ${{ secrets.WS_USER_KEY }} ]; then
+          if [ -z "$WS_APIKEY_NGINX" ] || [ -z "$WS_USER_KEY" ]; then
             echo "Secret is empty"
-              exit 1            
+            exit 1            
           fi
 
           if [ -z "$PRODUCT_NAME" ] || [ -z "$PROJECT_NAME" ]; then
@@ -116,20 +116,21 @@ jobs:
           echo "mend-scan-result=$(echo $exit_code)" >> $GITHUB_OUTPUT
           echo -e "\nEXIT CODE is: $exit_code\n"
 
-          if (( exit_code != 254 )); then
-            printf "\nMend scan detected problems.\n"
-            exit 0
-          #  exit 254
-          else
-            printf "\nMend scan completed successfully. Exiting with code = 0\n"
-            exit 0
-          fi
+          # if (( exit_code != 254 )); then
+          #   printf "\nMend scan detected problems.\n"
+          #   exit 0
+          # #  exit 254
+          # else
+          #   printf "\nMend scan completed successfully. Exiting with code = 0\n"
+          #   exit 0
+          # fi
 
       - name: Check if report is generated
         if: success() || steps.scan.conclusion == 'failure'
         id: report
         shell: bash
         run: |
+          echo "Scan conclusion: ${{ steps.scan.conclusion }}"
           echo "mend-report-file=$(find whitesource -type f -name "${PROJECT_NAME}*scan_report.json" | head -n 1)" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
 
@@ -137,6 +138,8 @@ jobs:
         if: success() || steps.scan.conclusion == 'failure'
         id: print
         run: |
+          echo "Scan conclusion: ${{ steps.scan.conclusion }}"
+          echo "Scan Outcome: ${{ steps.scan.outcome }}"
           cat ${{ steps.report.outputs.mend-report-file }} | jq .
 
       - name: Store mend report
