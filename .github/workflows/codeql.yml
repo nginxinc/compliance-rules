@@ -3,11 +3,10 @@ name: "CodeQL"
 on:
   workflow_call:
     inputs:
-      supported_languages:
+      requested_languages:
         description: 'Comma-separated list of supported languages'
         type: string
         required: true
-        default: 'go,python,javascript-typescript'
 
 jobs:
   detect-languages:
@@ -15,31 +14,40 @@ jobs:
     outputs:
       matched_matrix: ${{ steps.set-matrix.outputs.matched_matrix }}
       should_scan: ${{ steps.set-matrix.outputs.should_scan }}
-    steps:      
-      - name: Filter to supported languages
+    steps:
+      - name: Match with requested languages from repo1
         id: set-matrix
         run: |
-          IFS=',' read -r -a supported <<< "${{ inputs.supported_languages }}"
+          repo_langs=${{ steps.detect.outputs.repo_langs }}
+          IFS=',' read -r -a requested <<< "${{ inputs.requested_languages }}"
 
           matched=()
-          for lang in "${supported[@]}"; do
+          for lang in "${requested[@]}"; do
             lang_trimmed=$(echo "$lang" | xargs | tr '[:upper:]' '[:lower:]')
             matched+=("\"$lang_trimmed\"")
           done
 
           if [ ${#matched[@]} -gt 0 ]; then
             matrix_json="{\"language\":[${matched[*]}]}"
+            echo "Matching languages: ${matched[*]}"
             echo "should_scan=true" >> $GITHUB_OUTPUT
             echo "matched_matrix=$matrix_json" >> $GITHUB_OUTPUT
           else
+            echo "No matching languages found."
             echo "should_scan=false" >> $GITHUB_OUTPUT
             echo "matched_matrix={\"language\":[]}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Print matched languages summary
+        if: steps.set-matrix.outputs.should_scan == 'true'
+        run: |
+            echo "Matched languages: ${{ steps.set-matrix.outputs.matched_matrix }}"
+            echo "Scanning will run only for these languages."
+
           
   analyze:
     needs: detect-languages
-    if: needs.detect-languages.outputs.should_scan == 'true'
+    if: needs.detect-languages.outputs.should_scan == 'true'    
     name: Analyze (${{ matrix.language }})
     permissions:
       packages: read
@@ -48,7 +56,7 @@ jobs:
       security-events: write # for github/codeql-action/autobuild to send a status report
     strategy:
       matrix: ${{ fromJson(needs.detect-languages.outputs.matched_matrix) }}
-    runs-on: ubuntu-24.04    
+    runs-on: ubuntu-24.04
     
     steps:
       - name: Checkout repository
