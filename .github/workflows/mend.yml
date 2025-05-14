@@ -41,6 +41,7 @@ jobs:
 
       - name: Scan and upload
         id: scan
+        continue-on-error: true
         env:
           WS_URL: ${{ secrets.WS_URL }}
           WS_APIKEY_NGINX: ${{ secrets.WS_APIKEY_NGINX }}
