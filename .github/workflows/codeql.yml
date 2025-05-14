@@ -17,8 +17,7 @@ jobs:
     steps:
       - name: Match with requested languages from repo1
         id: set-matrix
-        run: |
-          repo_langs=${{ steps.detect.outputs.repo_langs }}
+        run: |          
           IFS=',' read -r -a requested <<< "${{ inputs.requested_languages }}"
 
           matched=()
@@ -27,8 +26,8 @@ jobs:
             matched+=("\"$lang_trimmed\"")
           done
 
-          if [ ${#matched[@]} -gt 0 ]; then
-            matrix_json="{\"language\":[${matched[*]}]}"
+          if [ ${#matched[@]} -gt 0 ]; then            
+            matched_json=$(printf '%s\n' "${matched[@]}" | jq -R . | jq -s '{language: .}')
             echo "Matching languages: ${matched[*]}"
             echo "should_scan=true" >> $GITHUB_OUTPUT
             echo "matched_matrix=$matrix_json" >> $GITHUB_OUTPUT
@@ -36,6 +35,7 @@ jobs:
             echo "No matching languages found."
             echo "should_scan=false" >> $GITHUB_OUTPUT
             echo "matched_matrix={\"language\":[]}" >> $GITHUB_OUTPUT
+            exit 1
           fi
 
       - name: Print matched languages summary
