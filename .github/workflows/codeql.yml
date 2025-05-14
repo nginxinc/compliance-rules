@@ -24,9 +24,7 @@ jobs:
           matched=()
           for lang in "${supported[@]}"; do
             lang_trimmed=$(echo "$lang" | xargs | tr '[:upper:]' '[:lower:]')
-            if echo "$repo_langs" | grep -iq "\"$lang_trimmed\""; then
-              matched+=("\"$lang_trimmed\"")
-            fi
+            matched+=("\"$lang_trimmed\"")
           done
 
           if [ ${#matched[@]} -gt 0 ]; then
