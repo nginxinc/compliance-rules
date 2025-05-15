@@ -27,6 +27,11 @@ jobs:
             requested+=("$trimmed")
           done
 
+          if [[ ${#requested[@]} -eq 0 ]]; then
+            echo "No requested languages provided. Exiting."
+            exit 1
+          fi
+          
           matrix_json=$(printf '%s\n' "${requested[@]}" | jq -R . | jq -s '{language: .}')
           escaped_json=$(echo "$matrix_json" | jq -c .)
 
@@ -79,7 +84,7 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@60168efe1c415ce0f5521ea06d5c2062adbeed1b # v3.28.17
         with:
-          category: "/language:${{matrix.language}}"     
+          category: "/language:${{matrix.language}}"
      
 
           
