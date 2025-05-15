@@ -10,6 +10,7 @@ on:
 
 jobs:
   detect-languages:
+    if: ${{ ( github.repository_owner == 'nginx' || github.repository_owner == 'nginxinc' ) }}
     runs-on: ubuntu-24.04
     outputs:
       matched_matrix: ${{ steps.set-matrix.outputs.matched_matrix }}
@@ -19,7 +20,8 @@ jobs:
         id: set-matrix
         run: |          
           IFS=',' read -r -a requested <<< "${{ inputs.requested_languages }}"
-          matrix_json=$(printf '%s\n' "${requested[@]}" | jq -R . | jq -s '{language: .}')
+          lang_trimmed=$(echo "${requested[@]}" | xargs | tr '[:upper:]' '[:lower:]')
+          matrix_json=$(printf '%s\n' "${lang_trimmed}" | jq -R . | jq -s '{language: .}')
           escaped_json=$(echo "$matrix_json" | jq -c .)
 
           if [ -n "$escaped_json" ] && [ "$escaped_json" != '{"language":[]}' ]; then
@@ -45,7 +47,7 @@ jobs:
           
   analyze:
     needs: detect-languages
-    if: needs.detect-languages.outputs.should_scan == 'true'    
+    if: ${{ needs.detect-languages.outputs.should_scan == 'true' && (github.repository_owner == 'nginx' || github.repository_owner == 'nginxinc') }}
     name: Analyze (${{ matrix.language }})
     permissions:
       packages: read
@@ -72,4 +74,17 @@ jobs:
         uses: github/codeql-action/analyze@60168efe1c415ce0f5521ea06d5c2062adbeed1b # v3.28.17        
         with:
           category: "/language:${{matrix.language}}"
+     
+  fail-if-not-scannable:
+    needs: detect-languages
+    if: ${{ needs.detect-languages.outputs.should_scan != 'true' || !(github.repository_owner == 'ab' || github.repository_owner == 'xy') }}
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Fail explicitly
+      run: |
+        echo "Conditions not met for scanning. Exiting with failure."
+        exit 1
+
+     
+
           
