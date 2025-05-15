@@ -20,10 +20,11 @@ jobs:
         run: |          
           IFS=',' read -r -a requested <<< "${{ inputs.requested_languages }}"
           matrix_json=$(printf '%s\n' "${requested[@]}" | jq -R . | jq -s '{language: .}')
-         
-          if [ -n "$matrix_json" ] && [ "$matrix_json" != '{"language":[]}' ]; then            
+          escaped_json=$(echo "$matrix_json" | jq -c .)
+
+          if [ -n "$escaped_json" ] && [ "$escaped_json" != '{"language":[]}' ]; then
             echo "should_scan=true" >> $GITHUB_OUTPUT
-            echo "matched_matrix=$matrix_json" >> $GITHUB_OUTPUT
+            echo "matched_matrix=$escaped_json" >> $GITHUB_OUTPUT
           else
             echo "No matching languages found."
             echo "should_scan=false" >> $GITHUB_OUTPUT
