@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       requested_languages:
-        description: 'Comma-separated list of supported languages'
+        description: 'Comma-separated list of requested languages'
         type: string
         required: true
 
@@ -15,7 +15,7 @@ jobs:
       matched_matrix: ${{ steps.set-matrix.outputs.matched_matrix }}
       should_scan: ${{ steps.set-matrix.outputs.should_scan }}
     steps:
-      - name: Match with requested languages from repo1
+      - name: Requested languages
         id: set-matrix
         run: |          
           IFS=',' read -r -a requested <<< "${{ inputs.requested_languages }}"
@@ -53,6 +53,7 @@ jobs:
       contents: read # for actions/checkout to fetch code
       security-events: write # for github/codeql-action/autobuild to send a status report
     strategy:
+      fail-fast: false
       matrix: ${{ fromJson(needs.detect-languages.outputs.matched_matrix) }}
     runs-on: ubuntu-24.04
     
