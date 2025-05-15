@@ -19,22 +19,15 @@ jobs:
         id: set-matrix
         run: |          
           IFS=',' read -r -a requested <<< "${{ inputs.requested_languages }}"
-
-          matched=()
-          for lang in "${requested[@]}"; do
-            lang_trimmed=$(echo "$lang" | xargs | tr '[:upper:]' '[:lower:]')            
-            matched+=("$lang_trimmed")
-          done
-
-          if [ ${#matched[@]} -gt 0 ]; then            
-            matched_json=$(printf '%s\n' "${matched[@]}" | jq -R . | jq -s '{language: .}')
-            echo "Matching languages: ${matched[*]}"
+          matrix_json=$(printf '%s\n' "${requested[@]}" | jq -R . | jq -s '{language: .}')
+         
+          if [ -n "$matrix_json" ] && [ "$matrix_json" != '{"language":[]}' ]; then            
             echo "should_scan=true" >> $GITHUB_OUTPUT
             echo "matched_matrix=$matrix_json" >> $GITHUB_OUTPUT
           else
             echo "No matching languages found."
             echo "should_scan=false" >> $GITHUB_OUTPUT
-            echo "matched_matrix={\"language\":[]}" >> $GITHUB_OUTPUT            
+            exit 1
           fi
 
       - name: Print matched languages summary
@@ -44,6 +37,7 @@ jobs:
             echo "Scanning will run only for these languages."
       
       - name: Validate matched_matrix JSON format
+        if: steps.set-matrix.outputs.should_scan == 'true'
         run: |
           echo '${{ steps.set-matrix.outputs.matched_matrix }}' | jq .
 
