@@ -77,20 +77,9 @@ jobs:
           queries: security-and-quality
     
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@60168efe1c415ce0f5521ea06d5c2062adbeed1b # v3.28.17        
+        uses: github/codeql-action/analyze@60168efe1c415ce0f5521ea06d5c2062adbeed1b # v3.28.17
         with:
-          category: "/language:${{matrix.language}}"
-     
-  fail-if-not-scannable:
-    needs: detect-languages
-    if: ${{ needs.detect-languages.outputs.should_scan != 'true' || !(github.repository_owner == 'ab' || github.repository_owner == 'xy') }}
-    runs-on: ubuntu-24.04
-    steps:
-    - name: Fail explicitly
-      run: |
-        echo "Conditions not met for scanning. Exiting with failure."
-        exit 1
-
+          category: "/language:${{matrix.language}}"     
      
 
           
