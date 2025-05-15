@@ -22,8 +22,8 @@ jobs:
 
           matched=()
           for lang in "${requested[@]}"; do
-            lang_trimmed=$(echo "$lang" | xargs | tr '[:upper:]' '[:lower:]')
-            matched+=("\"$lang_trimmed\"")
+            lang_trimmed=$(echo "$lang" | xargs | tr '[:upper:]' '[:lower:]')            
+            matched+=("$lang_trimmed")
           done
 
           if [ ${#matched[@]} -gt 0 ]; then            
@@ -34,8 +34,7 @@ jobs:
           else
             echo "No matching languages found."
             echo "should_scan=false" >> $GITHUB_OUTPUT
-            echo "matched_matrix={\"language\":[]}" >> $GITHUB_OUTPUT
-            exit 1
+            echo "matched_matrix={\"language\":[]}" >> $GITHUB_OUTPUT            
           fi
 
       - name: Print matched languages summary
@@ -43,6 +42,10 @@ jobs:
         run: |
             echo "Matched languages: ${{ steps.set-matrix.outputs.matched_matrix }}"
             echo "Scanning will run only for these languages."
+      
+      - name: Validate matched_matrix JSON format
+        run: |
+          echo '${{ steps.set-matrix.outputs.matched_matrix }}' | jq .
 
           
   analyze:
