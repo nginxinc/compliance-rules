@@ -19,9 +19,15 @@ jobs:
       - name: Requested languages
         id: set-matrix
         run: |          
-          IFS=',' read -r -a requested <<< "${{ inputs.requested_languages }}"
-          lang_trimmed=$(echo "${requested[@]}" | xargs | tr '[:upper:]' '[:lower:]')
-          matrix_json=$(printf '%s\n' "${lang_trimmed}" | jq -R . | jq -s '{language: .}')
+          IFS=',' read -r -a raw_requested <<< "${{ inputs.requested_languages }}"
+
+          requested=()
+          for lang in "${raw_requested[@]}"; do
+            trimmed=$(echo "$lang" | xargs)  # xargs trims leading/trailing spaces
+            requested+=("$trimmed")
+          done
+
+          matrix_json=$(printf '%s\n' "${requested[@]}" | jq -R . | jq -s '{language: .}')
           escaped_json=$(echo "$matrix_json" | jq -c .)
 
           if [ -n "$escaped_json" ] && [ "$escaped_json" != '{"language":[]}' ]; then
