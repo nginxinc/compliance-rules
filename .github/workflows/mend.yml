@@ -20,6 +20,9 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
 
 jobs:
   scan:
@@ -74,7 +77,6 @@ jobs:
       - name: Check if report is generated
         if: success() || steps.scan.conclusion == 'failure'
         id: report
-        shell: bash
         run: |
           echo "mend-report-file=$(find whitesource -type f -name "${PROJECT_NAME}*scan_report.json" | head -n 1)" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
