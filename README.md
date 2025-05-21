@@ -35,24 +35,24 @@ permissions:
 
 jobs:
   mend:
-    uses: nginxinc/compliance-rules/.github/workflows/mend.yml@main
+    uses: nginxinc/compliance-rules/.github/workflows/mend.yml@<git_tag>
     secrets: inherit
     with:
-      product_name: ptd-demo2_${{ github.head_ref || github.ref_name }}
-      project_name: ptd-demo2
+      product_name: <caller_product_name>_${{ github.head_ref || github.ref_name }}
+      project_name: <caller_project_name>
 ```
 
 - In the `mend` job reference the main mend workflow (in this repository)
 
 ```yaml
-uses: nginxinc/compliance-rules/.github/workflows/mend.yml@main
+uses: nginxinc/compliance-rules/.github/workflows/mend.yml@<git_tag>
 ```
 
-- Configure `product_name` and `project_name` variables. They represent github repository name.
+- Configure `product_name` and `project_name` variables. They represent caller github repository `product` and `project` name.
 
 ```yaml
-product_name: <your_repo_name>_${{ github.head_ref || github.ref_name }}
-project_name: <your_repo_name>
+product_name: <caller_product_name>_${{ github.head_ref || github.ref_name }}
+project_name: <caller_project_name>
 ```
 
 ### Mend workflow
@@ -98,7 +98,7 @@ permissions:
 
 jobs:
   codeql:
-    uses: nginxinc/compliance-rules/.github/workflows/codeql.yml@main
+    uses: nginxinc/compliance-rules/.github/workflows/codeql.yml@<git_tag>
     with:
       requested_languages: go
 ```
@@ -106,7 +106,7 @@ jobs:
 - In the `codeql` job reference the main `codeql` workflow (in this repository)
 
 ```yaml
-uses: nginxinc/compliance-rules/.github/workflows/codeql.yml@main
+uses: nginxinc/compliance-rules/.github/workflows/codeql.yml@<git_tag>
 ```
 
 ### CodeQL workflow
