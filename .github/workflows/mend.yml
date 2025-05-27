@@ -9,6 +9,8 @@ on:
         required: true
       WS_USER_KEY:
         required: true
+      WS_COMPLIANCE_THRESHOLD:
+        required: true
     inputs:
       product_name:
         type: string
@@ -87,13 +89,51 @@ jobs:
         run: |
           cat ${{ steps.report.outputs.mend-report-file }} | jq .
 
+      - name: Check for rejected policies
+        if: success() || steps.scan.conclusion == 'failure'
+        id: rejected
+        run: |
+          file=${{ steps.report.outputs.mend_report_file }}
+
+          if [[ -n "$file" ]]; then
+            echo -e "\nParsing Mend scan report file - $file\n"
+            result=$(jq -c ".libraries[] | select (.policyDetails.status == \"Reject\")" "$file")
+
+            # Check for rejected policies
+            if [[ -z "$result" ]]; then
+              echo "Currently there are no rejected libraries found"
+              exit 0
+            fi
+
+            # Checking Compliance Threshold
+            echo -e "\nWS_COMPLIANCE_THRESHOLD = ${{ secrets.WS_COMPLIANCE_THRESHOLD }}\n"
+
+            vulnerabilities=$(echo "$result" | jq -r ".vulnerabilities[] | select(.score >= ${{ secrets.WS_COMPLIANCE_THRESHOLD }})")
+            if [[ -z "$vulnerabilities" ]]; then
+              echo "Mend has not detected any vulnerable libraries with score >= ${{ secrets.WS_COMPLIANCE_THRESHOLD }}"
+            fi
+
+            empty_fix=$(echo "$vulnerabilities" | jq -c 'select(.topFix == null or .topFix == {})')
+            if [[ -n "$empty_fix" ]]; then
+              echo "The vulnerabilities that are currently identified does not have any fixes available."
+              echo "$empty_fix" | jq -r '.name'
+              echo "Allow the job to proceed with exit_code=0"
+              exit 0
+            else
+              echo "The reported  vulnerabilities has the fixes available. Breaking the pipeline as per compliance"
+              echo "$vulnerabilities" | jq -r '.name'
+            fi
+          else
+            echo "Unable to locate the mend scan report file. No parsing performed"
+          fi
+
       - name: Store mend report
         if: success() || steps.scan.conclusion == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: mend-scan-report
           path: whitesource
-          retention-days: 7
+          retention-days: 1
 
       - name: Final scan result
         if: ${{ steps.scan.outcome == 'failure' }} 
