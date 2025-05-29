@@ -144,4 +144,13 @@ jobs:
       - name: Final scan result
         if: ${{ steps.scan.outcome == 'success' }} 
         run: |          
+          exit 0  
+  forked_scan:
+    if: ${{ ( github.repository_owner == 'nginx' || github.repository_owner == 'nginxinc' ) && ( github.event.pull_request.head.repo.full_name != github.repository ) }}
+    name: Mend
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Forked PRs
+        run: |
+          echo "Forked PRs NO SCA Scan"
           exit 0
