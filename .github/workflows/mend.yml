@@ -28,7 +28,7 @@ defaults:
 
 jobs:
   scan:
-    if: ${{ ( github.repository_owner == 'nginx' || github.repository_owner == 'nginxinc' ) }}
+    if: ${{ ( github.repository_owner == 'nginx' || github.repository_owner == 'nginxinc' ) && ( github.event.pull_request.head.repo.full_name == github.repository ) }}
     name: Mend
     runs-on: ubuntu-24.04
     outputs:
