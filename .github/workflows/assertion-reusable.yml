@@ -1,0 +1,58 @@
+
+name: Reusable assertion document generator
+
+on:
+  workflow_call:
+    secrets:
+        ARTIFACTORY_USER:
+            required: true
+        ARTIFACTORY_TOKEN:
+            required: true
+    # Inputs must include all env vars required by ns-assertion-action
+    # Refer to action documentation: https://github.com/nginxinc/ns-assertion-action 
+    inputs:
+        artifact-name:
+            required: true
+            type: string
+        artifact-digest:
+            required: true
+            type: string
+        builder-id:
+            required: true
+            type: string
+        build-type:
+            required: true
+            type: string
+        builder-version:
+            required: true
+            type: string
+        build-artifact-name:
+            required: true
+            type: string
+        invocation-id:
+            required: true
+            type: string
+
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  generate_assertion_doc:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Generate assertion document
+        id: generate_doc
+        uses: nginxinc/ns-assertion-action@main
+        with:
+          artifact-name: ${{ inputs.artifact-name }}
+          artifact-digest: ${{ inputs.artifact-digest }}
+          builder-id: ${{ inputs.builder-id }}
+          build-type: ${{ inputs.build-type }}
+          builder-version: ${{ inputs.builder-version }}
+          build-artifact-name: ${{ inputs.build-artifact-name }}
+          invocation-id: ${{ inputs.invocation-id }}
