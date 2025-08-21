@@ -116,3 +116,18 @@ uses: nginxinc/compliance-rules/.github/workflows/codeql.yml@<git_tag>
 1. CodeQL analyses the `ProjectABC` code.
 1. Depends on the results the pipeline fails or passes.
 1. The GitHub repository (`ProjectA`) must be configured to reject PRs (prevent from merging with the `main` branch) if the codeql detects issues and the pipeline fails.  
+
+## Configure Assertion Document Workflow
+
+In your project release workflow add a step (workflow) for generating the Assertion Document.
+
+Example:
+
+```yaml
+```
+
+In the release job in the assertion step reference the main `assertion` workflow (in this repository)
+
+```yaml
+uses: nginxinc/complience-rules/.github/workflows/assertion-reusable.yml@<git_tag>
+```

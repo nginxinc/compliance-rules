@@ -1,4 +1,3 @@
-
 name: Reusable assertion document generator
 
 on:
@@ -7,6 +6,8 @@ on:
         ARTIFACTORY_USER:
             required: true
         ARTIFACTORY_TOKEN:
+            required: true
+        ARTIFACTORY_URL:
             required: true
     # Inputs must include all env vars required by ns-assertion-action
     # Refer to action documentation: https://github.com/nginxinc/ns-assertion-action 
