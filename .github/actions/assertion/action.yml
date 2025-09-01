@@ -1,0 +1,50 @@
+name: 'Assertion document'
+description: 'Generate assertion document'
+inputs:
+  artifactory-api-token:
+    description: 'API Key for accessing Artifactory to read packages info and upload signed assertion documents'
+    required: true
+  artifactory-user:
+    description: 'Artifactory user with permission to read and write'
+    required: true
+  artifactory-url:
+    description: 'Artifactory URL'
+    required: true
+  artifactory-repo:
+    description: 'Artifactory Repository'
+    required: true
+  artifact-name:
+    description: 'Build artifact name'
+    required: true
+  artifact-digest:
+    description: 'SHA256 Hash of the build artifact'
+    required: true
+  build-type:
+    description: 'The indicator for where we build the artifact. One of gitlab, github or gitswarm'
+    required: true
+  builder-id:
+    description: 'The build image indicator, an identifier for the build container'
+    required: true
+  builder-version:
+    description: 'version'
+    required: true
+  build-content-path:
+    description: 'The path where we store content of the output from `go version -m <binary-name>` command'
+  assertion-doc-file:
+    description: 'Filepath where to save conent of the assertion document'
+  invocation-id:
+    description: 'What event ID triggered the workflow'
+    required: true
+  started-on:
+    description: 'Pipeline start time'
+    required: true
+  finished-on:
+    description: 'Pipeline end time'
+    required: true
+outputs:
+  assertion-document:
+    description: "Generated assertion document"
+    #value: ${{ steps.doc.outputs.assertion-doc }}
+runs:
+  using: node20
+  main: invoke_binary.js
