@@ -49,7 +49,8 @@ defaults:
     shell: bash
 
 jobs:
-  generate-assertion-doc:
+  check-dependencies:
+    name: Checking Dependencies
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
@@ -61,6 +62,13 @@ jobs:
         uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
         with:
           go-version: 'stable'
+          cache: false
+
+  generate-assertion-doc:
+    name: Generate Assertion Doc
+    needs: check-dependencies
+    runs-on: ubuntu-24.04
+    steps:
     
     #   - name: Get packages from Go binary
     #     id: parse_binary
