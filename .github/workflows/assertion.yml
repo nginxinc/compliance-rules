@@ -1,0 +1,82 @@
+name: Reusable assertion document generator
+
+on:
+  workflow_call:
+    secrets:
+        ARTIFACTORY_USER:
+            required: true
+        ARTIFACTORY_TOKEN:
+            required: true
+        ARTIFACTORY_URL:
+            required: true
+    # Inputs must include all env vars required by ns-assertion-action
+    # Refer to action documentation: https://github.com/nginxinc/ns-assertion-action 
+    inputs:
+        artifact-name:
+            required: true
+            type: string
+        artifact-digest:
+            required: true
+            type: string
+        builder-id:
+            required: true
+            type: string
+        build-type:
+            required: true
+            type: string
+        builder-version:
+            required: true
+            type: string
+        build-artifact-name:
+            required: true
+            type: string
+        build-artifact-path:
+            required: true
+            type: string
+        build-go-binary-path:
+            required: true
+            type: string
+        invocation-id:
+            required: true
+            type: string
+
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  generate-assertion-doc:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go Environment
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+        with:
+          go-version: 'stable'
+    
+    #   - name: Get packages from Go binary
+    #     id: parse_binary
+    #     run: |
+    #       echo "Generating list of dependencies"
+    #       echo ${{ inputs.build-artifact-path }}
+
+      - name: Generate assertion document
+        id: generate_doc
+        uses: ./.github/actions/assertion
+        with:
+          artifact-name: ${{ inputs.artifact-name }}
+          artifact-digest: ${{ inputs.artifact-digest }}
+          builder-id: ${{ inputs.builder-id }}
+          build-type: ${{ inputs.build-type }}
+          builder-version: ${{ inputs.builder-version }}
+          build-artifact-name: ${{ inputs.build-artifact-name }}
+          build-go-binary-path: ${{ inputs.build-go-binary-path }}
+          invocation-id: ${{ inputs.invocation-id }}
