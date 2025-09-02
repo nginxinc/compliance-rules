@@ -21,7 +21,23 @@ The action require text input data representing raw output from the Go command `
 
 Example:
 
-```shell
+```yaml
+- name: Generate Assertion Document
+      id: assertiondoc
+      uses: nginxinc/compliance-rules/.github/actions/assertion@feat/assertion
+      with:
+        artifact-name: ptdcli_${{ github.ref_name }}
+        artifact-digest: 'test-digest'
+        build-type: 'github'
+        builder-id: 'github.com'
+        builder-version: '0.1.0-xyz'
+        invocation-id: ${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
+        artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
+        artifactory-api-token: ${{ secrets.ARTIFACTORY_TOKEN }}
+        artifactory-url: ${{ secrets.ARTIFACTORY_URL }}
+        artifactory-repo: 'f5-nginx-go-local-approved-dependency'
+        assertion-doc-file: assertion_ptdcli_${{ github.ref_name }}.json
+        build-content-path: ${{ steps.godeps.outputs.goversionm }}
 
 ```
 
