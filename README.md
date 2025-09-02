@@ -119,6 +119,12 @@ uses: nginxinc/compliance-rules/.github/workflows/codeql.yml@<git_tag>
 
 ## Configure Assertion Document Workflow
 
+### Data flow
+
+![assertion](img/assertion3.png)
+
+### Configuration
+
 In your project release workflow add a step for generating the assertion document.
 
 The assertion action require input var `build-content-path` that represents a text file with content from the `go version -m <binary>` command where `binary` represents compiled Go binary, for example `agent`.
