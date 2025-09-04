@@ -9,30 +9,19 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: DEBUG verify assertion file
-      id: verify_assertion
-      run: |
-        echo "assertion_doc=$(find -type f -name "assertion_ptdcli*.json" | head -n 1)" >> $GITHUB_OUTPUT
-        cat $GITHUB_OUTPUT
-      shell: bash
-
     - name: Install Cosign
       uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
 
     - name: Generate Checksum
       id: sign
       run: |
-        echo "Generating checksum and signing document..."
         cosign_binary=${COSIGN_BIN:-"cosign"}
         sha256sum ${{ inputs.assertion-doc }} >> "${{ inputs.assertion-doc }}_checksum.txt"
         checksum_file="${{ inputs.assertion-doc }}_checksum.txt"
         ${cosign_binary} sign-blob "${checksum_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
-        ls -al
         tar -cvf assertion.tar assertion*
         echo "assertiontar=$(find -type f -name "assertion.tar" | head -n 1)" >> $GITHUB_OUTPUT
-        cat $GITHUB_OUTPUT
       shell: bash
-
 
     - name: Store assertion document
       uses: actions/upload-artifact@v4
