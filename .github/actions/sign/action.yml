@@ -28,4 +28,4 @@ runs:
       with:
         name: assertion
         path: ${{ steps.sign.outputs.assertiontar }}
-        retention-days: 1
+        retention-days: 7
