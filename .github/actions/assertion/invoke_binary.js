@@ -1,0 +1,35 @@
+const childProcess = require('child_process')
+const os = require('os')
+const process = require('process')
+
+const VERSION = 'd4b2f9c'
+
+function chooseBinary() {
+    const platform = os.platform()
+    const arch = os.arch()
+
+    if (platform === 'linux' && arch === 'x64') {
+        return `assertiongha-linux-amd64-${VERSION}`
+    }
+    if (platform === 'linux' && arch === 'arm64') {
+        return `assertiongha-linux-arm64-${VERSION}`
+    }
+
+    console.error(`Unsupported platform (${platform}) and architecture (${arch})`)
+    process.exit(1)
+}
+
+function main() {
+    const binary = chooseBinary()
+    const mainScript = `${__dirname}/${binary}`
+    const spawnSyncReturns = childProcess.spawnSync(mainScript, { stdio: 'inherit' })
+    const status = spawnSyncReturns.status
+    if (typeof status === 'number') {
+        process.exit(status)
+    }
+    process.exit(1)
+}
+
+if (require.main === module) {
+    main()
+}
