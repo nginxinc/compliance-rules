@@ -40,7 +40,3 @@ Example:
         build-content-path: ${{ steps.godeps.outputs.goversionm }}
 
 ```
-
-### Required coniguration parameters
-
-## Troubleshooting
