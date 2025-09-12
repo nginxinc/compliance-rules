@@ -151,7 +151,7 @@ Example:
 ```yaml
 - name: Generate Assertion Document
       id: assertiondoc
-      uses: nginxinc/compliance-rules/.github/actions/assertion@main
+      uses: nginxinc/compliance-rules/.github/actions/assertion@<git-tag>
       with:
         artifact-name: ptdcli_${{ github.ref_name }}
         artifact-digest: 'test-digest'
@@ -178,9 +178,9 @@ The list of required variables:
 Example:
 
 ```yaml
-- name: Sign and Store Assertion Document
+    - name: Sign and Store Assertion Document
       id: sign
-      uses: nginxinc/compliance-rules/.github/actions/sign@feat/assertion
+      uses: nginxinc/compliance-rules/.github/actions/sign@<git-tag>
       with:
-        assertion-doc: ${{ steps.verify_assertion.outputs.assertiondocument }}
+        assertion-doc: ${{ steps.assertiondoc.outputs.assertion-document-path }}
 ```

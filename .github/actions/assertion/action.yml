@@ -42,9 +42,8 @@ inputs:
     description: 'Pipeline end time'
     required: true
 outputs:
-  assertion-document:
+  assertion-document-path:
     description: "Generated assertion document"
-    #value: ${{ steps.doc.outputs.assertion-doc }}
 runs:
   using: node20
   main: invoke_binary.js
