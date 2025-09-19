@@ -22,7 +22,7 @@ runs:
         #tar -cvf assertion.tar assertion*
         tar -cvf ${{ inputs.assertion-doc }}.tar ${{ inputs.assertion-doc }}_*
         #echo "assertiontar=$(find -type f -name "assertion.tar" | head -n 1)" >> $GITHUB_OUTPUT
-        echo "assertiotar=${{ inputs.assertion-doc }}.tar" >> $GITHUB_OUTPUT
+        echo "assertiontar=${{ inputs.assertion-doc }}.tar" >> $GITHUB_OUTPUT
         echo $GITHUB_OUTPUT
       shell: bash
 
