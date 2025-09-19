@@ -37,6 +37,6 @@ runs:
     - name: Store assertion document
       uses: actions/upload-artifact@v4
       with:
-        name: assertion-${{ steps.sign.outputs.assertiontar }}
+        name: ${{ steps.sign.outputs.assertiontar }}
         path: ${{ steps.sign.outputs.assertiontar }}
         retention-days: 7
