@@ -16,21 +16,20 @@ runs:
       id: sign
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
+
+        # Get assertion json file basename
         assertiondoc=$(basename "${{ inputs.assertion-doc }}")
         sha256sum "${assertiondoc}" >> "${assertiondoc}_checksum.txt"
         checksum_file="${assertiondoc}_checksum.txt"
+
+        # Sign
         ${cosign_binary} sign-blob "${checksum_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
+
+        # Create tarball
         tarball_name="${assertiondoc}.tar.gz"
         tar -czf "${tarball_name}" "${assertiondoc}" "${checksum_file}" "${checksum_file}.sig" "${checksum_file}.pem"
 
-        #sha256sum ${{ inputs.assertion-doc }} >> "${{ inputs.assertion-doc }}_checksum.txt"
-        #checksum_file="${{ inputs.assertion-doc }}_checksum.txt"
-        #${cosign_binary} sign-blob "${checksum_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
-        #tar -cvf assertion.tar assertion*
-        #tarball_name=$(basename "${{ inputs.assertion-doc }}")
-        #tar -cvf ${{ inputs.assertion-doc }}.tar ${{ inputs.assertion-doc }}_*
-        #echo "assertiontar=$(find -type f -name "assertion.tar" | head -n 1)" >> $GITHUB_OUTPUT
-        #echo "assertiontar=${{ inputs.assertion-doc }}.tar" >> $GITHUB_OUTPUT
+        # Create output var
         echo "assertiontar=${tarball_name}" >> $GITHUB_OUTPUT
         echo $GITHUB_OUTPUT
       shell: bash
