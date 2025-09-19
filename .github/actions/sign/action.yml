@@ -20,7 +20,7 @@ runs:
         sha256sum "${assertiondoc}" >> "${assertiondoc}_checksum.txt"
         checksum_file="${assertiondoc}_checksum.txt"
         ${cosign_binary} sign-blob "${checksum_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
-        tarball_name="${assertiondoc_name}.tar.gz"
+        tarball_name="${assertiondoc}.tar.gz"
         tar -czf "${tarball_name}" "${assertiondoc}" "${checksum_file}" "${checksum_file}.sig" "${checksum_file}.pem"
 
         #sha256sum ${{ inputs.assertion-doc }} >> "${{ inputs.assertion-doc }}_checksum.txt"
