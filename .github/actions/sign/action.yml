@@ -19,8 +19,11 @@ runs:
         sha256sum ${{ inputs.assertion-doc }} >> "${{ inputs.assertion-doc }}_checksum.txt"
         checksum_file="${{ inputs.assertion-doc }}_checksum.txt"
         ${cosign_binary} sign-blob "${checksum_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
-        tar -cvf assertion.tar assertion*
-        echo "assertiontar=$(find -type f -name "assertion.tar" | head -n 1)" >> $GITHUB_OUTPUT
+        #tar -cvf assertion.tar assertion*
+        tar -cvf ${{ inputs.assertion-doc }}.tar ${{ inputs.assertion-doc }}_*
+        #echo "assertiontar=$(find -type f -name "assertion.tar" | head -n 1)" >> $GITHUB_OUTPUT
+        echo "assertiotar=${{ inputs.assertion-doc }}.tar" >> $GITHUB_OUTPUT
+        echo $GITHUB_OUTPUT
       shell: bash
 
     - name: Store assertion document
