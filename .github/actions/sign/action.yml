@@ -16,16 +16,27 @@ runs:
       id: sign
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
-        sha256sum ${{ inputs.assertion-doc }} >> "${{ inputs.assertion-doc }}_checksum.txt"
-        checksum_file="${{ inputs.assertion-doc }}_checksum.txt"
+
+        # Get assertion json file basename
+        assertiondoc=$(basename "${{ inputs.assertion-doc }}")
+        sha256sum "${assertiondoc}" >> "${assertiondoc}_checksum.txt"
+        checksum_file="${assertiondoc}_checksum.txt"
+
+        # Sign
         ${cosign_binary} sign-blob "${checksum_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
-        tar -cvf assertion.tar assertion*
-        echo "assertiontar=$(find -type f -name "assertion.tar" | head -n 1)" >> $GITHUB_OUTPUT
+
+        # Create tarball
+        tarball_name="${assertiondoc}.tar.gz"
+        tar -czf "${tarball_name}" "${assertiondoc}" "${checksum_file}" "${checksum_file}.sig" "${checksum_file}.pem"
+
+        # Create output var
+        echo "assertiontar=${tarball_name}" >> $GITHUB_OUTPUT
+        echo $GITHUB_OUTPUT
       shell: bash
 
     - name: Store assertion document
       uses: actions/upload-artifact@v4
       with:
-        name: assertion
+        name: ${{ steps.sign.outputs.assertiontar }}
         path: ${{ steps.sign.outputs.assertiontar }}
         retention-days: 7
