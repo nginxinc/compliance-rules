@@ -41,6 +41,9 @@ inputs:
   finished-on:
     description: 'Pipeline end time'
     required: true
+  log-level:
+    description: 'Setup log level for action'
+    required: false
 outputs:
   assertion-document-path:
     description: "Generated assertion document"
