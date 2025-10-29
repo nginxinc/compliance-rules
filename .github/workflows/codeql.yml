@@ -93,4 +93,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/init@4e94bd11f71e507f7f87df81788dff88d1dacbfb # v4.31.0
         with:
-          category: "/language:${{matrix.language}}"
+          languages: "${{ matrix.language }}"
