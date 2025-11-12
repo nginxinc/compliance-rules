@@ -44,6 +44,9 @@ inputs:
   log-level:
     description: 'Setup log level for action'
     required: false
+  language:
+    description: 'Programming language'
+    required: false
 outputs:
   assertion-document-path:
     description: "Generated assertion document"
