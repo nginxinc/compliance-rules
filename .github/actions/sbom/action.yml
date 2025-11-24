@@ -1,0 +1,24 @@
+name: 'SBOM Document'
+description: 'Generates, signs and stores SBOM documents'
+
+inputs:
+  binary:
+    description: A binary to generate SBOM
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Download Syft
+      id: syft
+      uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
+    
+    # - name: Generate SBOM
+    #   id: sbom
+    
+    # - name: Store SBOM document
+    #   uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+    #   with:
+    #     name: ${{ steps.sbom.outputs.sbomdoc }}
+    #     path: ${{ steps.sbom.outputs.sbomdoc }}
+    #     retention-days: 7
