@@ -2,7 +2,7 @@ name: 'SBOM Document'
 description: 'Generates, signs and stores SBOM documents'
 
 inputs:
-  binary:
+  binary-name:
     description: A binary to generate SBOM
     required: true
 
@@ -13,8 +13,12 @@ runs:
       id: syft
       uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
     
-    # - name: Generate SBOM
-    #   id: sbom
+    - name: Generate SBOM
+      id: sbom
+      run: |
+        syft scan file:"${inputs.binary-name}" -o spdx-json > "${inputs.binary-name}.spdx.json"
+        cat "${inputs.binary-name}.spdx.json" | jq .
+      shell: bash
     
     # - name: Store SBOM document
     #   uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
