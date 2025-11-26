@@ -16,7 +16,7 @@ runs:
     - name: Generate SBOM
       id: sbom
       run: |
-        syft scan file:"${inputs.binary-name}" -o spdx-json > "${inputs.binary-name}.spdx.json"
+        syft scan file:${{ inputs.binary-name }} -o spdx-json > ${{inputs.binary-name }}.spdx.json
         cat "${inputs.binary-name}.spdx.json" | jq .
       shell: bash
     
