@@ -17,8 +17,8 @@ runs:
       id: sbom
       run: |
         binary=$(basename "${{ inputs.binary-name }}")
-        syft scan file:"${ binary }" -o spdx-json > "${{ inputs.binary-name }}.spdx.json"
-        cat "${{ inputs.binary-name }}.spdx.json" | jq .
+        syft scan file:"${binary}" -o spdx-json > "${binary}.spdx.json"
+        cat "${binary}.spdx.json" | jq .
       shell: bash
     
     # - name: Store SBOM document
