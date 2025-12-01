@@ -1,5 +1,5 @@
 name: 'SBOM Document'
-description: 'Generates, signs and stores SBOM documents'
+description: 'Generates, signs and stores SBOM document'
 
 inputs:
   binary-name:
@@ -19,6 +19,8 @@ runs:
         binary=$(basename "${{ inputs.binary-name }}")
         syft scan file:"${binary}" -o spdx-json > "${binary}.spdx.json"
         cat "${binary}.spdx.json" | jq .
+        echo "sbom-spdx=${binary}.spdx.json" >> $GITHUB_OUTPUT
+        cat $GITHUB_OUTPUT
       shell: bash
     
     # - name: Store SBOM document
