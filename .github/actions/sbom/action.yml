@@ -22,14 +22,14 @@ runs:
       id: sbom
       run: |
         syft scan file:"${{ inputs.binary-name }}" -o spdx-json > "${{ inputs.binary-name }}.spdx.json"
-        cat "${{ inputs.binary-name }}.spdx.json" | jq .
-        #echo "sbom-spdx=${binary}.spdx.json" >> $GITHUB_OUTPUT
-        #cat $GITHUB_OUTPUT
+        #cat "${{ inputs.binary-name }}.spdx.json" | jq .
+        echo "sbom-doc=${{ inputs.binary-name }}.spdx.json" >> $GITHUB_OUTPUT
+        cat $GITHUB_OUTPUT
       shell: bash
 
-    # - name: Store SBOM document
-    #   uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
-    #   with:
-    #     name: ${{ steps.sbom.outputs.sbomdoc }}
-    #     path: ${{ steps.sbom.outputs.sbomdoc }}
-    #     retention-days: 7
+    - name: Store SBOM document
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      with:
+        name: ${{ steps.sbom.outputs.sbom-doc }}
+        path: ${{ steps.sbom.outputs.sbom-doc }}
+        retention-days: 1
