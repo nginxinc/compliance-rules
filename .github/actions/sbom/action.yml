@@ -9,18 +9,23 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Download artifact
+      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0
+      with:
+        name: ${{ inputs.binary-name }}
+
     - name: Download Syft
       id: syft
       uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
-    
+
     - name: Generate SBOM
       id: sbom
       run: |
-        binary=$(basename "${{ inputs.binary-name }}")
-        syft scan file:"${binary}" -o spdx-json > "${binary}.spdx.json"
-        cat "${binary}.spdx.json" | jq .
-        echo "sbom-spdx=${binary}.spdx.json" >> $GITHUB_OUTPUT
-        cat $GITHUB_OUTPUT
+        #binary=$(basename "${{ inputs.binary-name }}")
+        syft scan file:"${{ inputs.binary-name }}" -o spdx-json > "${{ inputs.binary-name }}.spdx.json"
+        cat "${{ inputs.binary-name }}.spdx.json" | jq .
+        #echo "sbom-spdx=${binary}.spdx.json" >> $GITHUB_OUTPUT
+        #cat $GITHUB_OUTPUT
       shell: bash
     
     # - name: Store SBOM document
