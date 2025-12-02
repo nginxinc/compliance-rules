@@ -1,0 +1,78 @@
+# Usage: Upload the trigger token as a secret named GITLAB_TRIGGER_TOKEN in the GitHub repository settings.
+# Then load the action using:
+# - uses: nginxinc/compliance-rules/.github/actions/async-trigger@main
+
+name: 'Asynchronous Assertion Pipeline Trigger'
+description: 'Trigger a downstream asynchronous assertion pipeline in GitLab'
+inputs:
+  gitlab-trigger-token:
+    description: 'GitLab trigger token to authenticate the pipeline trigger generally {{ secrets.GITLAB_TRIGGER_TOKEN }}'
+    required: true
+  dependency-document:
+    description: 'Path to the file listing the dependencies'
+    # for go, this is the output of `go version -m`
+    # for npm, this is the package-lock.json or yarn.lock
+    # for C/C++, use language generic, this is the produced document agreed on
+    required: true
+  binary-name:
+    description: 'Name of the built binary'
+    required: true
+  binary-digest:
+    description: 'SHA256 hash of the built binary'
+    required: true
+  build-version:
+    description: 'Unique identifier for the version of the builder'
+    required: true
+  language:
+    description: 'language of the build'
+    required: true
+    options: ["go", "npm", "pypi", "cargo", "generic"]
+    # npm for JS, pypi for Python, cargo for Rust, generic for C/C++
+
+runs:
+  using: composite
+  steps:
+    # Check out the repository code
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      
+      - name: Setup files and variables
+        run: |
+          ARTIFACT_NAME=$(basename "${{ inputs.dependency-document }}")
+          cp "${{ inputs.dependency-document }}" "./${ARTIFACT_NAME}"
+          echo "BINARY_NAME=${{ inputs.binary-name }}" >> $GITHUB_ENV
+          echo "BINARY_DIGEST=${{ inputs.binary-digest }}" >> $GITHUB_ENV
+          echo "BUILD_VERSION=${{ inputs.build-version }}" >> $GITHUB_ENV
+          echo "LANGUAGE=${{ inputs.language }}" >> $GITHUB_ENV
+          echo "ARTIFACT_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
+          echo "JOB_ID=${{ github.run_id }}" >> $GITHUB_ENV
+          echo "TRIGGER_TOKEN=${{ inputs.gitlab-trigger-token }}" >> $GITHUB_ENV
+        shell: bash
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts
+          path: | 
+            ${{ env.ARTIFACT_NAME }}
+
+      - name: Install curl
+        run: sudo apt-get update && sudo apt-get install -y curl
+        shell: bash
+
+      - name: Trigger GitLab Pipeline
+        env:
+          CI_PROJECT_ID: ${{ github.repository }}
+          JOB_ID: ${{ env.JOB_ID }}
+          DEPENDENCY_DOC: ${{ env.ARTIFACT_NAME }}
+          BINARY_NAME: "${{ env.BINARY_NAME }}"
+          BINARY_DIGEST: ${{ env.BINARY_DIGEST }}
+          INVOCATION_ID: ${{ github.run_id }}
+          SOURCE: "github"
+          LANGUAGE: "${{ env.LANGUAGE }}"
+          BUILD_VERSION: "${{ env.BUILD_VERSION }}"
+          TRIGGER_TOKEN: "${{ env.TRIGGER_TOKEN }}"
+        run: |
+          echo "Checking environment variables: Job ID is $JOB_ID, Binary Digest is $BINARY_DIGEST"
+          echo "Triggering GitLab pipeline with API"
+          curl -X POST --fail -F token=$TRIGGER_TOKEN -F ref=main -F "variables[PROJECT_ID]=$CI_PROJECT_ID" -F "variables[JOB_ID]=$JOB_ID" -F "variables[DEPENDENCY_DOC]=$DEPENDENCY_DOC" -F "variables[BINARY_NAME]=$BINARY_NAME" -F "variables[BINARY_DIGEST]=$BINARY_DIGEST" -F "variables[INVOCATION_ID]=$INVOCATION_ID" -F "variables[LANGUAGE]=$LANGUAGE" -F "variables[SOURCE]=$SOURCE" -F "variables[BUILD_VERSION]=$BUILD_VERSION" "https://gitlab.com/api/v4/projects/75578446/trigger/pipeline"
+        shell: bash
