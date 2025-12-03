@@ -27,9 +27,35 @@ runs:
         cat $GITHUB_OUTPUT
       shell: bash
 
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
+
+    - name: Sign SBOM
+      id: sign
+      run: |
+        cosign_binary=${COSIGN_BIN:-"cosign"}
+
+        # Get SBOM json file basename
+        sbom-doc=$(basename "${{ inputs.binary-name }}")
+        sha256sum "${{ sbom-doc }}" >> "${sbom-doc}_checksum.txt"
+        checksum_file="${sbom-doc}_checksum.txt"
+
+        # Sign
+        ${cosign_binary} sign-blob "${checksum_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
+
+        # Create tarball
+        tarball_name="${sbom-doc}.tar.gz"
+        tar -czf "${tarball_name}" "${sbom-doc}" "${checksum_file}" "${checksum_file}.sig" "${checksum_file}.pem"
+
+        # Create output var
+        echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
+        echo $GITHUB_OUTPUT
+      shell: bash
+
+
     - name: Store SBOM document
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
-        name: ${{ steps.sbom.outputs.sbom-doc }}
-        path: ${{ steps.sbom.outputs.sbom-doc }}
+        name: ${{ steps.sign.outputs.sbomtar }}
+        path: ${{ steps.sign.outputs.sbomtar }}
         retention-days: 1
