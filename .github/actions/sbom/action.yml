@@ -22,7 +22,7 @@ runs:
       id: sbom
       run: |
         syft scan file:"${{ inputs.binary-name }}" -o spdx-json > "${{ inputs.binary-name }}.spdx.json"
-        #cat "${{ inputs.binary-name }}.spdx.json" | jq .
+        cat "${{ inputs.binary-name }}.spdx.json" | jq .
         echo "sbom-doc=${{ inputs.binary-name }}.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
       shell: bash
@@ -35,16 +35,15 @@ runs:
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
-        # Get SBOM json file basename
-        sha256sum "${{ steps.sbom.sbom-doc }}" >> "${{ steps.sbom.sbom-doc }}_checksum.txt"
-        checksum_file="${{ steps.sbom.sbom-doc }}_checksum.txt"
+        sha256sum "${{ steps.sbom.outputs.sbom-doc }}" >> "${{ steps.sbom.outputs.sbom-doc }}_checksum.txt"
+        checksum_file="${{ steps.sbom.outputs.sbom-doc }}_checksum.txt"
 
         # Sign
         ${cosign_binary} sign-blob "${checksum_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
 
         # Create tarball
         tarball_name="${{ inputs.binary-name }}.tar.gz"
-        tar -czf "${tarball_name}" "${{ steps.sbom.sbom-doc }}" "${checksum_file}" "${checksum_file}.sig" "${checksum_file}.pem"
+        tar -czf "${tarball_name}" "${{ steps.sbom.outputs.sbom-doc }}" "${checksum_file}" "${checksum_file}.sig" "${checksum_file}.pem"
 
         # Create output var
         echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
