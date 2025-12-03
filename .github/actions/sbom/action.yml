@@ -37,20 +37,18 @@ runs:
 
         sha256sum "${{ steps.sbom.outputs.sbom-doc }}" >> "${{ steps.sbom.outputs.sbom-doc }}_checksum.txt"
         checksum_file="${{ steps.sbom.outputs.sbom-doc }}_checksum.txt"
-        bundle_file="${{ steps.sbom.outputs.sbom-doc }}.bundle"
 
         # Sign
-        ${cosign_binary} sign-blob "${checksum_file}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
+        ${cosign_binary} sign-blob "${checksum_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
 
         # Create tarball
         tarball_name="${{ inputs.binary-name }}.tar.gz"
-        tar -czf "${tarball_name}" "${{ steps.sbom.outputs.sbom-doc }}" "${checksum_file}" "${bundle_file}" "${checksum_file}.sig" "${checksum_file}.pem"
+        tar -czf "${tarball_name}" "${{ steps.sbom.outputs.sbom-doc }}" "${checksum_file}" "${checksum_file}.sig" "${checksum_file}.pem"
 
         # Create output var
         echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
         echo $GITHUB_OUTPUT
       shell: bash
-
 
     - name: Store SBOM document
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
