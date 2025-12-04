@@ -42,7 +42,7 @@ runs:
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
-        sbomdoc=${{ steps.sbom.outputs.sbom-doc }}
+        sbomdoc=$(basename "${{ steps.sbom.outputs.sbom-doc }}")
         sha256sum "${sbomdoc}" >> "${sbomdoc}_checksum.txt"
         checksum_file=${sbomdoc}_checksum.txt
         bundle_file="${sbomdoc}.bundle"
@@ -52,7 +52,8 @@ runs:
 
         # Create tarball
         tarball_name="${{ steps.sbom.outputs.binary }}.tar.gz"
-        tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}" "${checksum_file}.sig" "${checksum_file}.pem"
+        # tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}" "${checksum_file}.sig" "${checksum_file}.pem"
+        tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}"
 
         # Create output var
         echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
