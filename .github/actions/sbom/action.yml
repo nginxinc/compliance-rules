@@ -21,9 +21,16 @@ runs:
     - name: Generate SBOM file
       id: sbom
       run: |
-        syft scan file:"${{ inputs.binary-name }}" -o spdx-json > "${{ inputs.binary-name }}.spdx.json"
-        cat "${{ inputs.binary-name }}.spdx.json" | jq .
-        echo "sbom-doc=${{ inputs.binary-name }}.spdx.json" >> $GITHUB_OUTPUT
+        binaryname=$(basename "${{ inputs.binary-name }}")
+
+        # Scan binary and generate SBOM doc
+        syft scan file:"${binaryname}" -o spdx-json > "${binaryname}.spdx.json"
+
+        # Temporary list the doc for testing purpose
+        cat "${binaryname}.spdx.json" | jq .
+
+        echo "binary=${binaryname}" >> $GITHUB_OUTPUT
+        echo "sbom-doc=${binaryname}.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
       shell: bash
 
@@ -35,16 +42,17 @@ runs:
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
-        sha256sum "${{ steps.sbom.outputs.sbom-doc }}" >> "${{ steps.sbom.outputs.sbom-doc }}_checksum.txt"
-        checksum_file=${{ steps.sbom.outputs.sbom-doc }}_checksum.txt
-        bundle_file="${checksum_file}.bundle"
+        sbomdoc=$(basename "${{ steps.sbom.outputs.sbom-doc }}")
+        sha256sum "${sbomdoc}" >> "${sbomdoc}_checksum.txt"
+        checksum_file=${sbomdoc}_checksum.txt
+        bundle_file="${sbomdoc}.bundle"
 
         # Sign
-        ${cosign_binary} sign-blob "${checksum_file}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
+        ${cosign_binary} sign-blob "${sbomdoc}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
 
         # Create tarball
-        tarball_name="${{ inputs.binary-name }}.tar.gz"
-        tar -czf "${tarball_name}" "${{ steps.sbom.outputs.sbom-doc }}" "${checksum_file}" "${bundle_file}" "${checksum_file}.sig" "${checksum_file}.pem"
+        tarball_name="${{ steps.sbom.outputs.binary }}.tar.gz"
+        tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}" "${checksum_file}.sig" "${checksum_file}.pem"
 
         # Create output var
         echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
