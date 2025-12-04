@@ -1,0 +1,67 @@
+name: 'SBOM Document'
+description: 'Generates, signs and stores SBOM document'
+
+inputs:
+  binary-name:
+    description: A binary to generate SBOM
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Download artifact
+      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0
+      with:
+        name: ${{ inputs.binary-name }}
+
+    - name: Download Syft
+      id: syft
+      uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
+
+    - name: Generate SBOM file
+      id: sbom
+      run: |
+        binaryname=$(basename "${{ inputs.binary-name }}")
+
+        # Scan binary and generate SBOM doc
+        syft scan file:"${binaryname}" -o spdx-json > "${binaryname}.spdx.json"
+
+        # Temporary list the doc for testing purpose
+        cat "${binaryname}.spdx.json" | jq .
+
+        echo "binary=${binaryname}" >> $GITHUB_OUTPUT
+        echo "sbom-doc=${binaryname}.spdx.json" >> $GITHUB_OUTPUT
+        cat $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
+
+    - name: Generate checksum and sign SBOM file
+      id: sign
+      run: |
+        cosign_binary=${COSIGN_BIN:-"cosign"}
+
+        sbomdoc=$(basename "${{ steps.sbom.outputs.sbom-doc }}")
+        sha256sum "${sbomdoc}" >> "${sbomdoc}_checksum.txt"
+        checksum_file=${sbomdoc}_checksum.txt
+        bundle_file="${{ steps.sbom.outputs.binary }}.bundle.json"
+
+        # Sign
+        ${cosign_binary} sign-blob "${sbomdoc}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
+
+        # Create tarball
+        tarball_name="${{ steps.sbom.outputs.binary }}_sbom.tar.gz"
+        tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}"
+
+        # Create output var
+        echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
+        echo $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Store SBOM document
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      with:
+        name: ${{ steps.sign.outputs.sbomtar }}
+        path: ${{ steps.sign.outputs.sbomtar }}
+        retention-days: 1
