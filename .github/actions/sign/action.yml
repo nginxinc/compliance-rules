@@ -10,7 +10,7 @@ runs:
   using: composite
   steps:
     - name: Install Cosign
-      uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
+      uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
 
     - name: Generate Checksum
       id: sign
@@ -21,13 +21,14 @@ runs:
         assertiondoc=$(basename "${{ inputs.assertion-doc }}")
         sha256sum "${assertiondoc}" >> "${assertiondoc}_checksum.txt"
         checksum_file="${assertiondoc}_checksum.txt"
+        bundle_file="${assertiondoc}.bundle.json"
 
         # Sign
-        ${cosign_binary} sign-blob "${checksum_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
+        ${cosign_binary} sign-blob "${checksum_file}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
 
         # Create tarball
         tarball_name="${assertiondoc}.tar.gz"
-        tar -czf "${tarball_name}" "${assertiondoc}" "${checksum_file}" "${checksum_file}.sig" "${checksum_file}.pem"
+        tar -czf "${tarball_name}" "${assertiondoc}" "${checksum_file}" "${bundle_file}"
 
         # Create output var
         echo "assertiontar=${tarball_name}" >> $GITHUB_OUTPUT
