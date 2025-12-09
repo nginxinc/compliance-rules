@@ -4,7 +4,7 @@ Compliance repo with main rules for SCA and SAST scan
 
 This repository provides common GitHub workflows for Mend and CodeQL scans.
 
-## Configure Mand workflow in a GitHub repository
+## Configure Mend workflow in a GitHub repository
 
 - Create `mend.yml` workflow in your project repository
 
