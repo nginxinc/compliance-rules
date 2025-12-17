@@ -65,3 +65,9 @@ runs:
         name: ${{ steps.sign.outputs.sbomtar }}
         path: ${{ steps.sign.outputs.sbomtar }}
         retention-days: 1
+
+    - name: Upload SBOM document to AZ
+      id: uploadaz
+      run: |
+        echo Uploading SBOM to AZ
+      shell: bash
