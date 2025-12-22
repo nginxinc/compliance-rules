@@ -76,5 +76,5 @@ runs:
     - name: Upload SBOM document to AZ
       id: uploadaz
       run: |
-        echo Uploading SBOM to AZ
+        echo Dummy test to upload SBOM to AZ store
       shell: bash
