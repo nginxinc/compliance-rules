@@ -14,6 +14,16 @@ inputs:
   az-vault-subscription-id:
     description: Azure subscription ID
     required: true
+  az-client-id:
+    description: Azure client id
+    required: true
+  az-tenant-id:
+    description: Azure tenant id
+    required: true
+  az-subscription-id:
+    description: Azure subscription id
+    required: true
+
 
 runs:
   using: composite
@@ -75,12 +85,26 @@ runs:
         path: ${{ steps.sign.outputs.sbomtar }}
         retention-days: 1
 
-    - name: Azure login
+    - name: Azure login to Vault for secrets
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
       with:
         client-id: ${{ inputs.az-vault-client-id }}
         tenant-id: ${{ inputs.az-vault-tenant-id }}
         subscription-id: ${{ inputs.az-vault-subscription-id }}
+
+    - name: Setup secrets
+      id: secrets
+      run: |
+        echo "Setting secrets for job"
+      shell: bash
+
+    - name: Azure login for upload
+      uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+      with:
+        client-id: ${{ inputs.az-client-it }}
+        tenant-id: ${{ inputs.az-tenant-id }}
+        subscription-id: ${{ inputs.az-subscription-id }}
+
 
     - name: Upload SBOM document to AZ
       id: uploadaz
