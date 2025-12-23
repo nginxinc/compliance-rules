@@ -5,13 +5,13 @@ inputs:
   binary-name:
     description: A binary to generate SBOM
     required: true
-  azure-client-id:
-    description: Azure ClientID
+  az-client-id:
+    description: Azure client ID
     required: true
-  azure-tenant-id:
+  az-tenant-id:
     description: Azure tenant ID
     required: true
-  azure-subscription-id:
+  az-subscription-id:
     description: Azure subscription ID
     required: true
 
