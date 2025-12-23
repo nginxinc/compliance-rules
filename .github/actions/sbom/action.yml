@@ -5,13 +5,13 @@ inputs:
   binary-name:
     description: A binary to generate SBOM
     required: true
-  az-client-id:
+  az-vault-client-id:
     description: Azure client ID
     required: true
-  az-tenant-id:
+  az-vault-tenant-id:
     description: Azure tenant ID
     required: true
-  az-subscription-id:
+  az-vault-subscription-id:
     description: Azure subscription ID
     required: true
 
@@ -78,9 +78,9 @@ runs:
     - name: Azure login
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
       with:
-        client-id: ${{ inputs.azure-client-id }}
-        tenant-id: ${{ inputs.azure-tenant-id }}
-        subscription-id: ${{ inputs.azure-subscription-id }}
+        client-id: ${{ inputs.az-vault-client-id }}
+        tenant-id: ${{ inputs.az-vault-tenant-id }}
+        subscription-id: ${{ inputs.az-vault-subscription-id }}
 
     - name: Upload SBOM document to AZ
       id: uploadaz
