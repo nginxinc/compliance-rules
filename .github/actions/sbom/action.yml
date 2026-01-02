@@ -5,6 +5,25 @@ inputs:
   binary-name:
     description: A binary to generate SBOM
     required: true
+  az-vault-client-id:
+    description: Azure client ID
+    required: true
+  az-vault-tenant-id:
+    description: Azure tenant ID
+    required: true
+  az-vault-subscription-id:
+    description: Azure subscription ID
+    required: true
+  az-client-id:
+    description: Azure client id
+    required: true
+  az-tenant-id:
+    description: Azure tenant id
+    required: true
+  az-subscription-id:
+    description: Azure subscription id
+    required: true
+
 
 runs:
   using: composite
@@ -33,6 +52,11 @@ runs:
         echo "sbom-doc=${binaryname}.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
       shell: bash
+      env:
+        SYFT_OUTPUT: "spdx-json"
+        SYFT_ENRICH: "golang"
+        SYFT_SOURCE_SUPPLIER: "F5 Networks"
+        SYFT_GOLANG_MAIN_MODULE_VERSION_FROM_LD_FLAGS: "true"
 
     - name: Install Cosign
       uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
@@ -65,3 +89,30 @@ runs:
         name: ${{ steps.sign.outputs.sbomtar }}
         path: ${{ steps.sign.outputs.sbomtar }}
         retention-days: 1
+
+    - name: Azure login to Vault for secrets
+      uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+      with:
+        client-id: ${{ inputs.az-vault-client-id }}
+        tenant-id: ${{ inputs.az-vault-tenant-id }}
+        subscription-id: ${{ inputs.az-vault-subscription-id }}
+
+    # - name: Setup secrets
+    #   id: secrets
+    #   run: |
+    #     echo "Setting secrets for job"
+    #   shell: bash
+
+    # - name: Azure login for upload
+    #   uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+    #   with:
+    #     client-id: ${{ inputs.az-client-it }}
+    #     tenant-id: ${{ inputs.az-tenant-id }}
+    #     subscription-id: ${{ inputs.az-subscription-id }}
+
+
+    # - name: Upload SBOM document to AZ
+    #   id: uploadaz
+    #   run: |
+    #     echo Dummy test to upload SBOM to AZ store
+    #   shell: bash
