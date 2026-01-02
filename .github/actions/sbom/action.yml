@@ -90,12 +90,12 @@ runs:
         path: ${{ steps.sign.outputs.sbomtar }}
         retention-days: 1
 
-    # - name: Azure login to Vault for secrets
-    #   uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
-    #   with:
-    #     client-id: ${{ inputs.az-vault-client-id }}
-    #     tenant-id: ${{ inputs.az-vault-tenant-id }}
-    #     subscription-id: ${{ inputs.az-vault-subscription-id }}
+    - name: Azure login to Vault for secrets
+      uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+      with:
+        client-id: ${{ inputs.az-vault-client-id }}
+        tenant-id: ${{ inputs.az-vault-tenant-id }}
+        subscription-id: ${{ inputs.az-vault-subscription-id }}
 
     # - name: Setup secrets
     #   id: secrets
