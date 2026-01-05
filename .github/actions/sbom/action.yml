@@ -103,15 +103,19 @@ runs:
         echo "Setting secrets for job"
       shell: bash
 
-    - name: Azure login for upload
-      uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
-      with:
-        client-id: ${{ inputs.az-client-it }}
-        tenant-id: ${{ inputs.az-tenant-id }}
-        subscription-id: ${{ inputs.az-subscription-id }}
+    # - name: Azure login for upload
+    #   uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+    #   with:
+    #     client-id: ${{ inputs.az-client-it }}
+    #     tenant-id: ${{ inputs.az-tenant-id }}
+    #     subscription-id: ${{ inputs.az-subscription-id }}
 
     - name: Upload SBOM document to AZ
-      id: uploadaz
-      run: |
-        echo "Dummy test to upload SBOM to AZ store"
-      shell: bash
+      uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
+      with:
+        inlineScript: |
+          echo -n "Uploading SBOM file ${{ steps.sign.outputs.sbomtar }} to AZ storage"
+
+          #
+          # az storage blob upload --auth-mode=login -f ${{ steps.sign.outputs.sbomtar }} -c ${{ steps.secrets.outputs.AZURE_BUCKET_NAME }} \
+          #         --account-name ${{ steps.secrets.outputs.AZURE_STORAGE_ACCOUNT }} --overwrite -n nginx-security-test/${{ steps.sign.outputs.sbomtar }}
