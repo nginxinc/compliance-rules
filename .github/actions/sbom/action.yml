@@ -5,6 +5,38 @@ inputs:
   binary-name:
     description: A binary to generate SBOM
     required: true
+  az-client-id:
+    description: Azure client id
+    required: true
+  az-tenant-id:
+    description: Azure tenant id
+    required: true
+  az-subscription-id:
+    description: Azure subscription id
+    required: true
+  az-storage-account:
+    description: Azure storage account for SBOM documents
+    required: true
+  artifactory-user:
+    description: Artifactory user
+    required: true
+  artifactory-token:
+    description: Artifactory token
+    required: true
+  product-name:
+    description: Name of the product, for example agent
+    required: true
+  repository:
+    description: Name of the git repo, for example nginx/kubernetes-ingress
+    required: true
+  ref:
+    description: The branch, tag or SHA to checkout
+    required: false
+    default: main
+  release-version:
+    description: Product release version (semver), for example v0.1.1
+    required: true
+
 
 runs:
   using: composite
@@ -18,7 +50,7 @@ runs:
       id: syft
       uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
 
-    - name: Generate SBOM file
+    - name: Generate SBOM file from Go binary
       id: sbom
       run: |
         binaryname=$(basename "${{ inputs.binary-name }}")
@@ -33,6 +65,15 @@ runs:
         echo "sbom-doc=${binaryname}.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
       shell: bash
+      env:
+        SYFT_OUTPUT: "spdx-json"
+        SYFT_ENRICH: "golang"
+        SYFT_SOURCE_SUPPLIER: "F5 Networks"
+        SYFT_GOLANG_MAIN_MODULE_VERSION_FROM_LD_FLAGS: "true"
+        SYFT_GOLANG_PROXY: "https://${{ inputs.artifactory-user }}:${{ inputs.artifactory-token }}@azr.artifactory.f5net.com/artifactory/api/go/f5-nginx-go-local-approved-dependency"
+        SYFT_SOURCE_NAME: ${{ inputs.product-name }}
+        SYFT_SOURCE_VERSION: ${{ inputs.release-version }}
+        SYFT_SOURCE_FILE_DIGESTS: "SHA-256,SHA-512"
 
     - name: Install Cosign
       uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
@@ -59,9 +100,35 @@ runs:
         echo $GITHUB_OUTPUT
       shell: bash
 
-    - name: Store SBOM document
+    - name: Store SBOM document in GitHub
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
         name: ${{ steps.sign.outputs.sbomtar }}
         path: ${{ steps.sign.outputs.sbomtar }}
         retention-days: 1
+
+    - name: Azure login
+      uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+      with:
+        client-id: ${{ inputs.az-client-id }}
+        tenant-id: ${{ inputs.az-tenant-id }}
+        subscription-id: ${{ inputs.az-subscription-id }}
+
+    - name: Setup Azure variables
+      id: azvars
+      run: |
+        echo "Setting variables for AZ upload"
+        echo "az-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
+        cat $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Upload SBOM document to Azure
+      uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
+      with:
+        inlineScript: |
+          echo -n "Uploading SBOM file ${{ steps.sbom.outputs.sbom-doc }} to Azure storage"
+          az storage blob upload --auth-mode=login \
+            --account-name ${{ inputs.az-storage-account }} \
+            --container-name ${{ steps.azvars.outputs.az-container-name }} \
+            -f ./${{ steps.sbom.outputs.sbom-tar }} \
+            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sbom.outputs.sbom-doc }}
