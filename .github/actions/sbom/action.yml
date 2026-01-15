@@ -127,9 +127,8 @@ runs:
       with:
         inlineScript: |
           echo -n "Uploading SBOM file ${{ steps.sbom.outputs.sbom-doc }} to Azure storage"
-
           az storage blob upload --auth-mode=login \
             --account-name ${{ inputs.az-storage-account }} \
             --container-name ${{ steps.azvars.outputs.az-container-name }} \
             -f ./${{ steps.sbom.outputs.sbom-doc }} \
-            --overwrite -n poc/nginx-security-test/${{ steps.sbom.outputs.sbom-doc }}
+            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sbom.outputs.sbom-doc }}
