@@ -185,5 +185,5 @@ runs:
           az storage blob upload --auth-mode=login \
             --account-name ${{ inputs.az-storage-account }} \
             --container-name ${{ steps.azvars.outputs.az-container-name }} \
-            -f ./${{ steps.sign-binary.outputs.sbom-tar }} \
-            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign-binary.outputs.sbom-tar }}
+            -f ./${{ steps.sign-binary.outputs.sbomtar }} \
+            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign-binary.outputs.sbomtar }}
