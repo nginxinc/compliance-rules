@@ -54,7 +54,7 @@ runs:
       id: syft
       uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
 
-    - name: Generate SBOM file from Go binary
+    - name: Generate SBOM from Go binary
       id: sbom
       run: |
         binaryname=$(basename "${{ inputs.binary-name }}")
@@ -79,13 +79,19 @@ runs:
         SYFT_SOURCE_VERSION: ${{ inputs.release-version }}
         SYFT_SOURCE_FILE_DIGESTS: "SHA-256,SHA-512"
 
-    # - name: Generate SBOM file from Go source code
+    # - name: Checkout Repository
+    #   uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+    #   with:
+    #     repository: "nginxinc/ptd-demo-3"
+    #     ref: ${{ inputs.ref }}
+    #     # token: ""
+    #     # path: ""
+
+    # - name: Generate SBOM from Go source code
     #   id: sbom-source
     #   run: |
-    #     binaryname=$(basename "${{ inputs.binary-name }}")
-
     #     # Scan binary and generate SBOM doc
-    #     syft scan dir:. -o spdx-json > "${binaryname}.source.spdx.json"
+    #     syft scan dir:. --exclude ./.git --exclude ./.github -o spdx-json > "${binaryname}.source.spdx.json"
 
     #     # Temporary list the doc for testing purpose
     #     cat "${binaryname}.source.spdx.json" | jq .
@@ -107,8 +113,8 @@ runs:
     - name: Install Cosign
       uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
 
-    - name: Generate checksum and sign SBOM file
-      id: sign
+    - name: Generate checksum and sign SBOM for binary
+      id: sign-binary
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
@@ -121,13 +127,33 @@ runs:
         ${cosign_binary} sign-blob "${sbomdoc}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
 
         # Create tarball
-        tarball_name="${{ steps.sbom.outputs.binary }}_sbom.tar.gz"
+        tarball_name="${{ steps.sbom.outputs.binary }}_sbom_bin.tar.gz"
         tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}"
 
         # Create output var
         echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
         echo $GITHUB_OUTPUT
       shell: bash
+
+    # - name: Generate checksum and sign SBOM for source
+    #   id: sign-source
+    #   run: |
+    #     sbomdoc-source=$(basename "${{ steps.sbom.outputs.sbom-doc }}")
+    #     sha256sum "${sbomdoc}" >> "${sbomdoc}_checksum.txt"
+    #     checksum_file=${sbomdoc}_checksum.txt
+    #     bundle_file="${{ steps.sbom.outputs.binary }}.bundle.json"
+
+    #     # Sign
+    #     ${cosign_binary} sign-blob "${sbomdoc}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
+
+    #     # Create tarball
+    #     tarball_name="${{ steps.sbom.outputs.binary }}_source_sbom.tar.gz"
+    #     tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}"
+
+    #     # Create output var
+    #     echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
+    #     echo $GITHUB_OUTPUT
+    #   shell: bash
 
     - name: Store SBOM document in GitHub
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
@@ -159,5 +185,5 @@ runs:
           az storage blob upload --auth-mode=login \
             --account-name ${{ inputs.az-storage-account }} \
             --container-name ${{ steps.azvars.outputs.az-container-name }} \
-            -f ./${{ steps.sbom.outputs.sbom-tar }} \
-            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sbom.outputs.sbom-doc }}
+            -f ./${{ steps.sign-binary.outputs.sbom-tar }} \
+            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign-binary.outputs.sbom-tar }}
