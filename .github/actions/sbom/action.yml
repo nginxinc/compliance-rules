@@ -158,8 +158,8 @@ runs:
     - name: Store SBOM document in GitHub
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
-        name: ${{ steps.sign.outputs.sbomtar }}
-        path: ${{ steps.sign.outputs.sbomtar }}
+        name: ${{ steps.sign-binary.outputs.sbomtar }}
+        path: ${{ steps.sign-binary.outputs.sbomtar }}
         retention-days: 1
 
     - name: Azure login
