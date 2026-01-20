@@ -80,13 +80,13 @@ runs:
         sbomdoc=$(basename "${{ steps.sbom.outputs.sbom-doc-source }}")
         sha256sum "${sbomdoc}" >> "${sbomdoc}_checksum.txt"
         checksum_file=${sbomdoc}_checksum.txt
-        bundle_file="${{ steps.sbom-source.outputs.sbom-doc-source }}.bundle.json"
+        bundle_file="${{ steps.sbom.outputs.sbom-doc-source }}.bundle.json"
 
         # Sign
         ${cosign_binary} sign-blob "${sbomdoc}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
 
         # Create tarball
-        tarball_name="${{ inputs.product-name }}_sbom_source.tar.gz"
+        tarball_name="${{ inputs.product-name }}_${{ inputs.release-version }}_sbom_source.tar.gz"
         tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}"
 
         # Create output var
