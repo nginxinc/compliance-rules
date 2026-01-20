@@ -101,28 +101,28 @@ runs:
         path: ${{ steps.sign.outputs.sbomtar }}
         retention-days: 1
 
-    # - name: Azure login
-    #   uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
-    #   with:
-    #     client-id: ${{ inputs.az-client-id }}
-    #     tenant-id: ${{ inputs.az-tenant-id }}
-    #     subscription-id: ${{ inputs.az-subscription-id }}
+    - name: Azure login
+      uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+      with:
+        client-id: ${{ inputs.az-client-id }}
+        tenant-id: ${{ inputs.az-tenant-id }}
+        subscription-id: ${{ inputs.az-subscription-id }}
 
-    # - name: Setup Azure variables
-    #   id: azvars
-    #   run: |
-    #     echo "Setting variables for AZ upload"
-    #     echo "az-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
-    #     cat $GITHUB_OUTPUT
-    #   shell: bash
+    - name: Setup Azure variables
+      id: azvars
+      run: |
+        echo "Setting variables for AZ upload"
+        echo "az-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
+        cat $GITHUB_OUTPUT
+      shell: bash
 
-    # - name: Upload SBOM document to Azure
-    #   uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
-    #   with:
-    #     inlineScript: |
-    #       echo -n "Uploading SBOM file ${{ steps.sbom.outputs.sbom-doc }} to Azure storage"
-    #       az storage blob upload --auth-mode=login \
-    #         --account-name ${{ inputs.az-storage-account }} \
-    #         --container-name ${{ steps.azvars.outputs.az-container-name }} \
-    #         -f ./${{ steps.sign-binary.outputs.sbomtar }} \
-    #         --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign-binary.outputs.sbomtar }}
+    - name: Upload SBOM document to Azure storage
+      uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
+      with:
+        inlineScript: |
+          echo "Uploading SBOM file ${{ steps.sign.outputs.sbomtar }} to Azure storage"
+          az storage blob upload --auth-mode=login \
+            --account-name ${{ inputs.az-storage-account }} \
+            --container-name ${{ steps.azvars.outputs.az-container-name }} \
+            -f ./${{ steps.sign.outputs.sbomtar }} \
+            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
