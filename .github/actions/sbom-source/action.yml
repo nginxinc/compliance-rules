@@ -5,6 +5,22 @@ inputs:
   binary-name:
     description: A binary to generate SBOM
     required: true
+  product-name:
+    description: Name of the product, for example agent
+    required: true
+  repository:
+    description: Name of the git repo, for example nginx/kubernetes-ingress
+    required: true
+  ref:
+    description: The branch, tag or SHA to checkout
+    required: true
+  release-version:
+    description: Product release version (semver), for example v0.1.1
+    required: true
+  language:
+    description: Programming language, for example golang, java, rust
+    required: false
+    default: golang
   az-client-id:
     description: Azure client id
     required: true
@@ -23,24 +39,6 @@ inputs:
   artifactory-token:
     description: Artifactory token
     required: true
-  product-name:
-    description: Name of the product, for example agent
-    required: true
-  repository:
-    description: Name of the git repo, for example nginx/kubernetes-ingress
-    required: true
-  ref:
-    description: The branch, tag or SHA to checkout
-    required: false
-    default: main
-  release-version:
-    description: Product release version (semver), for example v0.1.1
-    required: true
-  language:
-    description: Programming language, for example golang, java, rust
-    required: false
-    default: golang
-
 
 runs:
   using: composite
