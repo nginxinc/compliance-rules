@@ -48,7 +48,7 @@ runs:
     - name: Checkout Repository
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
-        repository: "nginxinc/ptd-demo-3"
+        repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
         # token: ""
         # path: ""
@@ -67,13 +67,12 @@ runs:
       id: sbom-source
       run: |
         # Scan binary and generate SBOM doc
-        syft scan dir:. --exclude ./.git --exclude ./.github -o spdx-json > "${binaryname}.source.spdx.json"
+        syft scan dir:. --exclude ./.git --exclude ./.github -o spdx-json > "${{ inputs.product-name }}.source.spdx.json"
 
         # Temporary list the doc for testing purpose
-        cat "${binaryname}.source.spdx.json" | jq .
+        cat "${{ inputs.product-name }}.source.spdx.json" | jq .
 
-        echo "binary=${binaryname}" >> $GITHUB_OUTPUT
-        echo "sbom-doc-source=${binaryname}.source.spdx.json" >> $GITHUB_OUTPUT
+        echo "sbom-doc-source=${{ inputs.product-name }}.source.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
       shell: bash
       env:
@@ -90,20 +89,20 @@ runs:
       uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
 
     - name: Generate checksum and sign SBOM for binary
-      id: sign-binary
+      id: sign
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
         sbomdoc=$(basename "${{ steps.sbom-source.outputs.sbom-doc-source }}")
         sha256sum "${sbomdoc}" >> "${sbomdoc}_checksum.txt"
         checksum_file=${sbomdoc}_checksum.txt
-        bundle_file="${{ steps.sbom-source.outputs.binary }}.bundle.json"
+        bundle_file="${{ steps.sbom-source.outputs.sbom-doc-source }}.bundle.json"
 
         # Sign
         ${cosign_binary} sign-blob "${sbomdoc}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
 
         # Create tarball
-        tarball_name="${{ steps.sbom.outputs.binary }}_sbom_bin.tar.gz"
+        tarball_name="${{ steps.sbom.outputs.sbom-doc-source }}_sbom_source.tar.gz"
         tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}"
 
         # Create output var
@@ -114,8 +113,8 @@ runs:
     - name: Store SBOM document in GitHub
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
-        name: ${{ steps.sign-binary.outputs.sbomtar }}
-        path: ${{ steps.sign-binary.outputs.sbomtar }}
+        name: ${{ steps.sign.outputs.sbomtar }}
+        path: ${{ steps.sign.outputs.sbomtar }}
         retention-days: 1
 
     # - name: Azure login
