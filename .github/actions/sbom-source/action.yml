@@ -48,9 +48,9 @@ runs:
       uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
 
     - name: Generate SBOM from Go source code
-      id: sbom-source
+      id: sbom
       run: |
-        # Scan binary and generate SBOM doc
+        # Scan source directory and generate SBOM
         syft scan dir:. --exclude ./.git --exclude ./.github -o spdx-json > "${{ inputs.product-name }}.source.spdx.json"
 
         # Temporary list the doc for testing purpose
@@ -77,7 +77,7 @@ runs:
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
-        sbomdoc=$(basename "${{ steps.sbom-source.outputs.sbom-doc-source }}")
+        sbomdoc=$(basename "${{ steps.sbom.outputs.sbom-doc-source }}")
         sha256sum "${sbomdoc}" >> "${sbomdoc}_checksum.txt"
         checksum_file=${sbomdoc}_checksum.txt
         bundle_file="${{ steps.sbom-source.outputs.sbom-doc-source }}.bundle.json"
@@ -86,7 +86,7 @@ runs:
         ${cosign_binary} sign-blob "${sbomdoc}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
 
         # Create tarball
-        tarball_name="${{ steps.sbom.outputs.sbom-doc-source }}_sbom_source.tar.gz"
+        tarball_name="${{ inputs.product-name }}_sbom_source.tar.gz"
         tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}"
 
         # Create output var
