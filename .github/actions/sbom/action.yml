@@ -1,10 +1,23 @@
-name: 'SBOM Document'
+name: 'SBOM from binary'
 description: 'Generates, signs and stores SBOM document'
 
 inputs:
   binary-name:
     description: A binary to generate SBOM
     required: true
+  product-name:
+    description: Name of the product, for example 'agent', 'nic'
+    required: true
+  ref:
+    description: The branch, tag or SHA to checkout
+    required: true
+  release-version:
+    description: Product release version (semver), for example v0.1.1
+    required: true
+  language:
+    description: Programming language, for example golang, java, rust
+    required: false
+    default: golang
   az-client-id:
     description: Azure client id
     required: true
@@ -23,23 +36,22 @@ inputs:
   artifactory-token:
     description: Artifactory token
     required: true
-  product-name:
-    description: Name of the product, for example agent
-    required: true
-  repository:
-    description: Name of the git repo, for example nginx/kubernetes-ingress
-    required: true
-  ref:
-    description: The branch, tag or SHA to checkout
+  save_in_github:
+    description: Stores SBOM document as GitHub artifact
     required: false
-    default: main
-  release-version:
-    description: Product release version (semver), for example v0.1.1
+    default: "false"
+  retention_days:
+    description: How long (days) artifacts are stored in GitHub
     required: true
-  language:
-    description: Programming language, for example golang, java, rust
-    required: false
-    default: golang
+    default: "1"
+  save_in_az:
+    description: Stores SBOM docs in Azure
+    required: true
+    default: "true"
+  debug:
+    description: Show generated SBOM in GitHub workflow log
+    required: true
+    default: "false"
 
 
 runs:
@@ -79,42 +91,11 @@ runs:
         SYFT_SOURCE_VERSION: ${{ inputs.release-version }}
         SYFT_SOURCE_FILE_DIGESTS: "SHA-256,SHA-512"
 
-    # - name: Checkout Repository
-    #   uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-    #   with:
-    #     repository: "nginxinc/ptd-demo-3"
-    #     ref: ${{ inputs.ref }}
-    #     # token: ""
-    #     # path: ""
-
-    # - name: Generate SBOM from Go source code
-    #   id: sbom-source
-    #   run: |
-    #     # Scan binary and generate SBOM doc
-    #     syft scan dir:. --exclude ./.git --exclude ./.github -o spdx-json > "${binaryname}.source.spdx.json"
-
-    #     # Temporary list the doc for testing purpose
-    #     cat "${binaryname}.source.spdx.json" | jq .
-
-    #     echo "binary=${binaryname}" >> $GITHUB_OUTPUT
-    #     echo "sbom-doc-source=${binaryname}.source.spdx.json" >> $GITHUB_OUTPUT
-    #     cat $GITHUB_OUTPUT
-    #   shell: bash
-    #   env:
-    #     SYFT_OUTPUT: "spdx-json"
-    #     SYFT_ENRICH: "golang"
-    #     SYFT_SOURCE_SUPPLIER: "F5 Networks"
-    #     SYFT_GOLANG_MAIN_MODULE_VERSION_FROM_LD_FLAGS: "true"
-    #     SYFT_GOLANG_PROXY: "https://${{ inputs.artifactory-user }}:${{ inputs.artifactory-token }}@azr.artifactory.f5net.com/artifactory/api/go/f5-nginx-go-local-approved-dependency"
-    #     SYFT_SOURCE_NAME: ${{ inputs.product-name }}
-    #     SYFT_SOURCE_VERSION: ${{ inputs.release-version }}
-    #     SYFT_SOURCE_FILE_DIGESTS: "SHA-256,SHA-512"
-
     - name: Install Cosign
       uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
 
     - name: Generate checksum and sign SBOM for binary
-      id: sign-binary
+      id: sign
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
@@ -135,27 +116,8 @@ runs:
         echo $GITHUB_OUTPUT
       shell: bash
 
-    # - name: Generate checksum and sign SBOM for source
-    #   id: sign-source
-    #   run: |
-    #     sbomdoc-source=$(basename "${{ steps.sbom.outputs.sbom-doc }}")
-    #     sha256sum "${sbomdoc}" >> "${sbomdoc}_checksum.txt"
-    #     checksum_file=${sbomdoc}_checksum.txt
-    #     bundle_file="${{ steps.sbom.outputs.binary }}.bundle.json"
-
-    #     # Sign
-    #     ${cosign_binary} sign-blob "${sbomdoc}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
-
-    #     # Create tarball
-    #     tarball_name="${{ steps.sbom.outputs.binary }}_source_sbom.tar.gz"
-    #     tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}"
-
-    #     # Create output var
-    #     echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
-    #     echo $GITHUB_OUTPUT
-    #   shell: bash
-
     - name: Store SBOM document in GitHub
+      if: inputs.save_in_github == 'true'
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
         name: ${{ steps.sign-binary.outputs.sbomtar }}
@@ -163,6 +125,7 @@ runs:
         retention-days: 1
 
     - name: Azure login
+      if: inputs.save_in_az == 'true'
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
       with:
         client-id: ${{ inputs.az-client-id }}
@@ -170,6 +133,7 @@ runs:
         subscription-id: ${{ inputs.az-subscription-id }}
 
     - name: Setup Azure variables
+      if: inputs.save_in_az == 'true'
       id: azvars
       run: |
         echo "Setting variables for AZ upload"
@@ -178,6 +142,7 @@ runs:
       shell: bash
 
     - name: Upload SBOM document to Azure
+      if: inputs.save_in_az == 'true'
       uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
       with:
         inlineScript: |

@@ -1,4 +1,4 @@
-name: 'SBOM Document'
+name: 'SBOM from Source'
 description: 'Generates, signs and stores SBOM document'
 
 inputs:
@@ -7,9 +7,6 @@ inputs:
     required: true
   product-name:
     description: Name of the product, for example agent
-    required: true
-  repository:
-    description: Name of the git repo, for example nginx/kubernetes-ingress
     required: true
   ref:
     description: The branch, tag or SHA to checkout
