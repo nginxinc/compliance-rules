@@ -39,6 +39,22 @@ inputs:
   artifactory-token:
     description: Artifactory token
     required: true
+  save_in_github:
+    description: Stores SBOM document as GitHub artifact
+    required: false
+    default: "false"
+  retention_days:
+    description: How long (days) artifacts are stored in GitHub
+    required: true
+    default: "1"
+  save_in_az:
+    description: Stores SBOM docs in Azure
+    required: true
+    default: "true"
+  debug:
+    description: Show generated SBOM in GitHub workflow log
+    required: true
+    default: "false"
 
 runs:
   using: composite
@@ -54,7 +70,7 @@ runs:
         syft scan dir:. --exclude ./.git --exclude ./.github -o spdx-json > "${{ inputs.product-name }}.source.spdx.json"
 
         # Temporary list the doc for testing purpose
-        cat "${{ inputs.product-name }}.source.spdx.json" | jq .
+        #cat "${{ inputs.product-name }}.source.spdx.json" | jq .
 
         echo "sbom-doc-source=${{ inputs.product-name }}.source.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
@@ -69,6 +85,12 @@ runs:
         SYFT_SOURCE_VERSION: ${{ inputs.release-version }}
         SYFT_SOURCE_FILE_DIGESTS: "SHA-256,SHA-512"
     
+    - name: Show SBOM doc in log
+      if: inputs.debug == 'true'
+      run: |
+        cat "${{ steps.sbom.outputs.sbom-doc-source }}" | jq .
+      shell: bash
+
     - name: Install Cosign
       uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
 
@@ -95,6 +117,7 @@ runs:
       shell: bash
 
     - name: Store SBOM document in GitHub
+      if: inputs.save_in_github == 'true'
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
         name: ${{ steps.sign.outputs.sbomtar }}
@@ -102,6 +125,7 @@ runs:
         retention-days: 1
 
     - name: Azure login
+      if: inputs.save_in_az == 'true'
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
       with:
         client-id: ${{ inputs.az-client-id }}
@@ -109,6 +133,7 @@ runs:
         subscription-id: ${{ inputs.az-subscription-id }}
 
     - name: Setup Azure variables
+      if: inputs.save_in_az == 'true'
       id: azvars
       run: |
         echo "Setting variables for AZ upload"
@@ -117,6 +142,7 @@ runs:
       shell: bash
 
     - name: Upload SBOM document to Azure storage
+      if: inputs.save_in_az == 'true'
       uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
       with:
         inlineScript: |
