@@ -191,3 +191,30 @@ Example:
         assertion-doc: ${{ steps.assertiondoc.outputs.assertion-document-path }}
 ```
 
+## SBOM documents for Go projects
+
+This section describes how to configure GitHub workflows to generate SBOM documents for both Go binaries and Go source code.
+
+SBOMs generated for a binary are intended for customers, while SBOM documents generated from source code for internal use.
+
+### SBOM for Go binary
+
+To generate SBOMs for Go binaries use GitHub Action [sbom](https://github.com/nginxinc/compliance-rules/tree/main/.github/actions/sbom).
+
+#### Configuration
+
+The code snippet below illustrates how to include SBOM step in GitHub workflow, and what parameters to pass to the action.
+
+```
+code sample
+```
+
+
+### SBOM for Go source code
+
+To generate SBOMs for Go source code use GitHub Action [sbom-source](https://github.com/nginxinc/compliance-rules/tree/main/.github/actions/sbom-source).
+
+
+```
+code sample
+```
