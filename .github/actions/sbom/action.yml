@@ -57,11 +57,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Download artifact
-      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0
-      with:
-        name: ${{ inputs.binary-name }}
-
     - name: Download Syft
       id: syft
       uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
