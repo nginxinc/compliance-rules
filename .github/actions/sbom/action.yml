@@ -72,13 +72,13 @@ runs:
         binaryname=$(basename "${{ inputs.binary-name }}")
 
         # Scan binary and generate SBOM doc
-        syft scan file:"${binaryname}" -o spdx-json > "${binaryname}.spdx.json"
+        syft scan file:"${binaryname}" -o spdx-json > "${binaryname}.bin.spdx.json"
 
         # Temporary list the doc for testing purpose
         cat "${binaryname}.spdx.json" | jq .
 
         echo "binary=${binaryname}" >> $GITHUB_OUTPUT
-        echo "sbom-doc=${binaryname}.spdx.json" >> $GITHUB_OUTPUT
+        echo "sbom-doc-bin=${binaryname}.bin.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
       shell: bash
       env:
@@ -99,16 +99,16 @@ runs:
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
-        sbomdoc=$(basename "${{ steps.sbom.outputs.sbom-doc }}")
+        sbomdoc=$(basename "${{ steps.sbom.outputs.sbom-doc-bin }}")
         sha256sum "${sbomdoc}" >> "${sbomdoc}_checksum.txt"
         checksum_file=${sbomdoc}_checksum.txt
-        bundle_file="${{ steps.sbom.outputs.binary }}.bundle.json"
+        bundle_file="${{ steps.sbom.outputs.sbom-doc-bin }}.bundle.json"
 
         # Sign
         ${cosign_binary} sign-blob "${sbomdoc}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
 
         # Create tarball
-        tarball_name="${{ steps.sbom.outputs.binary }}_sbom_bin.tar.gz"
+        tarball_name="${{ inputs.product-name }}_${{ inputs.release-version }}_sbom_bin.tar.gz"
         tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}"
 
         # Create output var
@@ -120,8 +120,8 @@ runs:
       if: inputs.save_in_github == 'true'
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
-        name: ${{ steps.sign-binary.outputs.sbomtar }}
-        path: ${{ steps.sign-binary.outputs.sbomtar }}
+        name: ${{ steps.sign.outputs.sbomtar }}
+        path: ${{ steps.sign.outputs.sbomtar }}
         retention-days: 1
 
     - name: Azure login
@@ -146,9 +146,9 @@ runs:
       uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
       with:
         inlineScript: |
-          echo -n "Uploading SBOM file ${{ steps.sbom.outputs.sbom-doc }} to Azure storage"
+          echo -n "Uploading SBOM file ${{ steps.sbom.outputs.sbomtar }} to Azure storage"
           az storage blob upload --auth-mode=login \
             --account-name ${{ inputs.az-storage-account }} \
             --container-name ${{ steps.azvars.outputs.az-container-name }} \
-            -f ./${{ steps.sign-binary.outputs.sbomtar }} \
-            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign-binary.outputs.sbomtar }}
+            -f ./${{ steps.sign.outputs.sbomtar }} \
+            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
