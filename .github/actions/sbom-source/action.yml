@@ -1,4 +1,4 @@
-name: 'SBOM from binary'
+name: 'SBOM from Source'
 description: 'Generates, signs and stores SBOM document'
 
 inputs:
@@ -6,7 +6,7 @@ inputs:
     description: A binary to generate SBOM
     required: true
   product-name:
-    description: Name of the product, for example 'agent', 'nic'
+    description: Name of the product, for example agent
     required: true
   ref:
     description: The branch, tag or SHA to checkout
@@ -53,7 +53,6 @@ inputs:
     required: true
     default: "false"
 
-
 runs:
   using: composite
   steps:
@@ -61,16 +60,16 @@ runs:
       id: syft
       uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
 
-    - name: Generate SBOM from Go binary
+    - name: Generate SBOM from Go source code
       id: sbom
       run: |
-        binaryname=$(basename "${{ inputs.binary-name }}")
+        # Scan source directory and generate SBOM
+        syft scan dir:. --exclude ./.git --exclude ./.github -o spdx-json > "${{ inputs.product-name }}.src.spdx.json"
 
-        # Scan binary and generate SBOM doc
-        syft scan file:"${binaryname}" -o spdx-json > "${binaryname}.bin.spdx.json"
+        # Temporary list the doc for testing purpose
+        #cat "${{ inputs.product-name }}.src.spdx.json" | jq .
 
-        echo "binary=${binaryname}" >> $GITHUB_OUTPUT
-        echo "sbom-doc-bin=${binaryname}.bin.spdx.json" >> $GITHUB_OUTPUT
+        echo "sbom-doc-src=${{ inputs.product-name }}.src.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
       shell: bash
       env:
@@ -82,11 +81,11 @@ runs:
         SYFT_SOURCE_NAME: ${{ inputs.product-name }}
         SYFT_SOURCE_VERSION: ${{ inputs.release-version }}
         SYFT_SOURCE_FILE_DIGESTS: "SHA-256,SHA-512"
-
-    - name: Show SBOM doc in workflow log
+    
+    - name: Show SBOM doc in log
       if: inputs.debug == 'true'
       run: |
-        cat "${{ steps.sbom.outputs.sbom-doc-bin }}" | jq .
+        cat "${{ steps.sbom.outputs.sbom-doc-src }}" | jq .
       shell: bash
 
     - name: Install Cosign
@@ -97,16 +96,16 @@ runs:
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
-        sbomdoc=$(basename "${{ steps.sbom.outputs.sbom-doc-bin }}")
+        sbomdoc=$(basename "${{ steps.sbom.outputs.sbom-doc-src }}")
         sha256sum "${sbomdoc}" >> "${sbomdoc}_checksum.txt"
         checksum_file=${sbomdoc}_checksum.txt
-        bundle_file="${{ steps.sbom.outputs.sbom-doc-bin }}.bundle.json"
+        bundle_file="${{ steps.sbom.outputs.sbom-doc-src }}.bundle.json"
 
         # Sign
         ${cosign_binary} sign-blob "${sbomdoc}" --bundle="${bundle_file}" --output-signature="${checksum_file}.sig" --output-certificate="${checksum_file}.pem" -y
 
         # Create tarball
-        tarball_name="${{ inputs.product-name }}_${{ inputs.release-version }}_sbom_bin.tar.gz"
+        tarball_name="${{ inputs.product-name }}_${{ inputs.release-version }}_sbom_src.tar.gz"
         tar -czf "${tarball_name}" "${sbomdoc}" "${checksum_file}" "${bundle_file}"
 
         # Create output var
@@ -139,12 +138,12 @@ runs:
         cat $GITHUB_OUTPUT
       shell: bash
 
-    - name: Upload SBOM document to Azure
+    - name: Upload SBOM document to Azure storage
       if: inputs.save_in_az == 'true'
       uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
       with:
         inlineScript: |
-          echo -n "Uploading SBOM file ${{ steps.sbom.outputs.sbomtar }} to Azure storage"
+          echo "Uploading SBOM file ${{ steps.sign.outputs.sbomtar }} to Azure storage"
           az storage blob upload --auth-mode=login \
             --account-name ${{ inputs.az-storage-account }} \
             --container-name ${{ steps.azvars.outputs.az-container-name }} \
