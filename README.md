@@ -203,18 +203,43 @@ To generate SBOMs for Go binaries use GitHub Action [sbom](https://github.com/ng
 
 #### Configuration
 
-The code snippet below illustrates how to include SBOM step in GitHub workflow, and what parameters to pass to the action.
+The code snippet below illustrates how to include SBOM step in GitHub workflow and what parameters to pass to the action.
 
+```yaml
+- name: Generate SBOM from binary
+  uses: nginxinc/compliance-rules/.github/actions/sbom@main
+  with:
+    binary-name: ${{ steps.check.outputs.binary-path }}
+    product-name: ${{ github.event.repository.name }}
+    release-version: ${{ github.ref_name }}
+    artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
+    artifactory-token: ${{ secrets.ARTIFACTORY_TOKEN }}
+    az-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    az-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+    az-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    az-storage-account: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+    save_in_github: 'true'
+    save_in_az: 'true'
+    debug: ${{ inputs.debug }}
 ```
-code sample
-```
-
 
 ### SBOM for Go source code
 
 To generate SBOMs for Go source code use GitHub Action [sbom-source](https://github.com/nginxinc/compliance-rules/tree/main/.github/actions/sbom-source).
 
-
-```
-code sample
+```yaml
+- name: Generate SBOM from binary
+  uses: nginxinc/compliance-rules/.github/actions/sbom@main
+  with:
+    product-name: ${{ github.event.repository.name }}
+    release-version: ${{ github.ref_name }}
+    artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
+    artifactory-token: ${{ secrets.ARTIFACTORY_TOKEN }}
+    az-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    az-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+    az-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    az-storage-account: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+    save_in_github: 'true'
+    save_in_az: 'true'
+    debug: ${{ inputs.debug }}
 ```
