@@ -2,7 +2,14 @@
 
 Compliance repo with main rules for SCA and SAST scan
 
-This repository provides common GitHub workflows for Mend and CodeQL scans.
+This repository provides common GitHub Actions and GitHub workflows for code scans and generating SBOM documents.
+
+## Table of Content
+
+- [Configure Mend workflow](#configure-mend-workflow-in-a-github-repository)
+- [Configure CodeQL workflow](#configure-codeql-workflow-in-a-github-repository)
+- [Configure Assertion Document workflow](#configure-assertion-document-workflow)
+- [Configure SBOM workflow for Go projects](#sbom-documents-for-go-projects)
 
 ## Configure Mend workflow in a GitHub repository
 
