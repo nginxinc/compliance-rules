@@ -2,7 +2,14 @@
 
 Compliance repo with main rules for SCA and SAST scan
 
-This repository provides common GitHub workflows for Mend and CodeQL scans.
+This repository provides common GitHub Actions and GitHub workflows for code scans and generating SBOM documents.
+
+## Table of Content
+
+- [Configure Mend workflow](#configure-mend-workflow-in-a-github-repository)
+- [Configure CodeQL workflow](#configure-codeql-workflow-in-a-github-repository)
+- [Configure Assertion Document workflow](#configure-assertion-document-workflow)
+- [Configure SBOM workflow for Go projects](#sbom-documents-for-go-projects)
 
 ## Configure Mend workflow in a GitHub repository
 
@@ -191,3 +198,90 @@ Example:
         assertion-doc: ${{ steps.assertiondoc.outputs.assertion-document-path }}
 ```
 
+## SBOM documents for Go projects
+
+This section describes how to configure GitHub workflows to generate SBOM documents for both Go binaries and Go source code.
+
+SBOMs generated for a binary are intended for customers, while SBOM documents generated from source code for internal use.
+
+### SBOM for Go binary
+
+To generate SBOMs for Go binaries use GitHub Action [sbom](https://github.com/nginxinc/compliance-rules/tree/main/.github/actions/sbom).
+
+#### Configuration
+
+The code snippet below illustrates how to include SBOM step in GitHub workflow and what parameters to pass to the action.
+
+```yaml
+- name: Generate SBOM from binary
+  uses: nginxinc/compliance-rules/.github/actions/sbom@main
+  with:
+    binary-name: ${{ steps.check.outputs.binary-path }}
+    product-name: ${{ github.event.repository.name }}
+    release-version: ${{ github.ref_name }}
+    artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
+    artifactory-token: ${{ secrets.ARTIFACTORY_TOKEN }}
+    az-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    az-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+    az-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    az-storage-account: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+    save_in_github: 'true'
+    save_in_az: 'true'
+    debug: ${{ inputs.debug }}
+```
+
+The `sbom` action expects the following parameters:
+
+- `binary-name` - path to the Go binary created in previous step(s)
+- `product-name` - usually it's git repository name (wihout the organization name), for example `agent`
+- `release-version` - git tag, for example `v1.2.2`, or release branch name, for example `release-1.2.2`
+- `artifactory-user` - secrets.ARTIFACTORY_USER
+- `artifactory-token` - secrets.ARTIFACTORY_TOKEN
+- `save_in_github` - 'true' or 'false', stores or skips storing SBOM tarball as a GitHub artifact. Defaults to `false`
+- `save_in_az` - 'true' or 'false', stores or skips uploading SBOM tarball to Azure Storage
+- `debug` - 'true' or 'fales', allows to output SBOM file in GitHub workflow log. Defaults to `false`
+
+NGINX Security Team specific secrets set at the repository level:
+
+- `az-client-id` - secrets.AZURE_CLIENT_ID
+- `az-tenant-id` - secrets.AZURE_TENANT_ID
+- `az-subscription-id` - secrets.AZURE_SUBSCRIPTION_ID
+- `az-storage-account` - secrets.AZURE_STORAGE_ACCOUNT
+
+### SBOM for Go source code
+
+To generate SBOMs for Go source code use GitHub Action [sbom-source](https://github.com/nginxinc/compliance-rules/tree/main/.github/actions/sbom-source).
+
+```yaml
+- name: Generate SBOM from binary
+  uses: nginxinc/compliance-rules/.github/actions/sbom@main
+  with:
+    product-name: ${{ github.event.repository.name }}
+    release-version: ${{ github.ref_name }}
+    artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
+    artifactory-token: ${{ secrets.ARTIFACTORY_TOKEN }}
+    az-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    az-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+    az-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    az-storage-account: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+    save_in_github: 'true'
+    save_in_az: 'true'
+    debug: ${{ inputs.debug }}
+```
+
+The `sbom-source` action expects the following parameters:
+
+- `product-name` - usually it's git repository name (wihout the organization name), for example `agent`
+- `release-version` - git tag, for example `v1.2.2`, or release branch name, for example `release-1.2.2`
+- `artifactory-user` - secrets.ARTIFACTORY_USER
+- `artifactory-token` - secrets.ARTIFACTORY_TOKEN
+- `save_in_github` - 'true' or 'false', stores or skips storing SBOM tarball as a GitHub artifact. Defaults to `false`
+- `save_in_az` - 'true' or 'false', stores or skips uploading SBOM tarball to Azure Storage
+- `debug` - 'true' or 'fales', allows to output SBOM file in GitHub workflow log. Defaults to `false`
+
+NGINX Security Team specific secrets set at the repository level:
+
+- `az-client-id` - secrets.AZURE_CLIENT_ID
+- `az-tenant-id` - secrets.AZURE_TENANT_ID
+- `az-subscription-id` - secrets.AZURE_SUBSCRIPTION_ID
+- `az-storage-account` - secrets.AZURE_STORAGE_ACCOUNT

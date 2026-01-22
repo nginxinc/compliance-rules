@@ -2,9 +2,6 @@ name: 'SBOM from Source'
 description: 'Generates, signs and stores SBOM document'
 
 inputs:
-  binary-name:
-    description: A binary to generate SBOM
-    required: true
   product-name:
     description: Name of the product, for example agent
     required: true
