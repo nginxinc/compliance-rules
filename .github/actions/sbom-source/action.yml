@@ -36,18 +36,18 @@ inputs:
   save_in_github:
     description: Stores SBOM document as GitHub artifact
     required: false
-    default: "false"
+    default: "true"
   retention_days:
     description: How long (days) artifacts are stored in GitHub
-    required: true
+    required: false
     default: "1"
   save_in_az:
     description: Stores SBOM docs in Azure
-    required: true
+    required: false
     default: "true"
   debug:
     description: Show generated SBOM in GitHub workflow log
-    required: true
+    required: false
     default: "false"
 
 runs:
