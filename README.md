@@ -214,7 +214,7 @@ The code snippet below illustrates how to include SBOM step in GitHub workflow a
 
 You can reference version of the SBOM Action by using `sha` (`git_ref` in the example below) and adding a comment with corresponding git tag, for example:
 
-```yaml
+```shell
 uses: nginxinc/compliance-rules/.github/actions/sbom@0aab935582c35a00e2c671d8fe25b7fdd72a927b # v0.3.1
 ```
 
@@ -261,7 +261,7 @@ To generate SBOMs for Go source code use GitHub Action [sbom-source](https://git
 
 You can reference version of the SBOM Action by using `sha` (`git_ref` in the example below) and adding a comment with corresponding git tag, for example:
 
-```yaml
+```shell
 uses: nginxinc/compliance-rules/.github/actions/sbom-source@0aab935582c35a00e2c671d8fe25b7fdd72a927b # v0.3.1
 ```
 
