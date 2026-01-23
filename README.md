@@ -204,7 +204,7 @@ This section describes how to configure GitHub workflows to generate SBOM docume
 
 SBOMs generated for a binary are intended for customers, while SBOM documents generated from source code for internal use.
 
-### SBOM for Go binary
+### Generating SBOM for Go binary
 
 To generate SBOMs for Go binaries use GitHub Action [sbom](https://github.com/nginxinc/compliance-rules/tree/main/.github/actions/sbom).
 
@@ -212,9 +212,17 @@ To generate SBOMs for Go binaries use GitHub Action [sbom](https://github.com/ng
 
 The code snippet below illustrates how to include SBOM step in GitHub workflow and what parameters to pass to the action.
 
+You can reference version of the SBOM Action by using `sha` (`ref` in the example below) and adding a comment with corresponding git tag, for example:
+
+```yaml
+uses: nginxinc/compliance-rules/.github/actions/sbom@0aab935582c35a00e2c671d8fe25b7fdd72a927b # v0.3.1
+```
+
+Below if the full example of the GitHub workflow step that generates SBOM document for the Go binary. The path to the binary is assigned to the `binary-name` variable.
+
 ```yaml
 - name: Generate SBOM from binary
-  uses: nginxinc/compliance-rules/.github/actions/sbom@main
+  uses: nginxinc/compliance-rules/.github/actions/sbom@<ref> # <tag>
   with:
     binary-name: ${{ steps.check.outputs.binary-path }}
     product-name: ${{ github.event.repository.name }}
@@ -225,10 +233,12 @@ The code snippet below illustrates how to include SBOM step in GitHub workflow a
     az-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
     az-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     az-storage-account: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
-    save_in_github: 'true'
-    save_in_az: 'true'
-    debug: ${{ inputs.debug }}
 ```
+
+where:
+
+- `ref` can be sha, git tag or branch
+- `tag` is a git tag corresponding to the sha
 
 The `sbom` action expects the following parameters:
 
@@ -237,9 +247,6 @@ The `sbom` action expects the following parameters:
 - `release-version` - git tag, for example `v1.2.2`, or release branch name, for example `release-1.2.2`
 - `artifactory-user` - secrets.ARTIFACTORY_USER
 - `artifactory-token` - secrets.ARTIFACTORY_TOKEN
-- `save_in_github` - 'true' or 'false', stores or skips storing SBOM tarball as a GitHub artifact. Defaults to `false`
-- `save_in_az` - 'true' or 'false', stores or skips uploading SBOM tarball to Azure Storage
-- `debug` - 'true' or 'fales', allows to output SBOM file in GitHub workflow log. Defaults to `false`
 
 NGINX Security Team specific secrets set at the repository level:
 
@@ -248,13 +255,19 @@ NGINX Security Team specific secrets set at the repository level:
 - `az-subscription-id` - secrets.AZURE_SUBSCRIPTION_ID
 - `az-storage-account` - secrets.AZURE_STORAGE_ACCOUNT
 
-### SBOM for Go source code
+### Generating SBOM for Go source code
 
 To generate SBOMs for Go source code use GitHub Action [sbom-source](https://github.com/nginxinc/compliance-rules/tree/main/.github/actions/sbom-source).
 
+You can reference version of the SBOM Action by using `sha` (`ref` in the example below) and adding a comment with corresponding git tag, for example:
+
+```yaml
+uses: nginxinc/compliance-rules/.github/actions/sbom-source@0aab935582c35a00e2c671d8fe25b7fdd72a927b # v0.3.1
+```
+
 ```yaml
 - name: Generate SBOM from binary
-  uses: nginxinc/compliance-rules/.github/actions/sbom@main
+  uses: nginxinc/compliance-rules/.github/actions/sbom-source@<ref> # <tag>
   with:
     product-name: ${{ github.event.repository.name }}
     release-version: ${{ github.ref_name }}
@@ -264,10 +277,12 @@ To generate SBOMs for Go source code use GitHub Action [sbom-source](https://git
     az-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
     az-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     az-storage-account: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
-    save_in_github: 'true'
-    save_in_az: 'true'
-    debug: ${{ inputs.debug }}
 ```
+
+where:
+
+- `ref` can be sha, git tag or branch
+- `tag` is a git tag corresponding to the sha
 
 The `sbom-source` action expects the following parameters:
 
@@ -275,9 +290,6 @@ The `sbom-source` action expects the following parameters:
 - `release-version` - git tag, for example `v1.2.2`, or release branch name, for example `release-1.2.2`
 - `artifactory-user` - secrets.ARTIFACTORY_USER
 - `artifactory-token` - secrets.ARTIFACTORY_TOKEN
-- `save_in_github` - 'true' or 'false', stores or skips storing SBOM tarball as a GitHub artifact. Defaults to `false`
-- `save_in_az` - 'true' or 'false', stores or skips uploading SBOM tarball to Azure Storage
-- `debug` - 'true' or 'fales', allows to output SBOM file in GitHub workflow log. Defaults to `false`
 
 NGINX Security Team specific secrets set at the repository level:
 
