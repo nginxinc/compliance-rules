@@ -160,24 +160,24 @@ Example:
 
 ```yaml
 - name: Generate Assertion Document
-      id: assertiondoc
-      uses: nginxinc/compliance-rules/.github/actions/assertion@<git-tag>
-      with:
-        artifact-name: ${{ github.event.repository.name }}_${{ github.sha }}_${{ github.run_number }}_${{ matrix.gateway.os }}_${{ matrix.gateway.arch }}
-        artifact-digest: ${{ matrix.gateway.digest }}
-        build-type: 'github'
-        builder-id: 'github.com'
-        builder-version: '0.1.0-xyz'
-        invocation-id: ${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
-        artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
-        artifactory-api-token: ${{ secrets.ARTIFACTORY_TOKEN }}
-        artifactory-url: ${{ secrets.ARTIFACTORY_URL }}
-        artifactory-repo: 'f5-nginx-go-local-approved-dependency'
-        assertion-doc-file: assertion_${{ github.event.repository.name }}_${{ github.sha }}_${{ github.run_id }}_${{ github.run_number }}_${{ matrix.gateway.os }}_${{ matrix.gateway.arch }}.json
-        build-content-path: ${{ steps.godeps.outputs.goversionm }}
-        started-on: ${{ github.event.head_commit.timestamp || github.event.created_at }}
-        finished-on: ${{ github.event.head_commit.timestamp || github.event.created_at }}
-        log-level: 'DEBUG'
+  id: assertiondoc
+  uses: nginxinc/compliance-rules/.github/actions/assertion@<git-tag>
+  with:
+    artifact-name: ${{ github.event.repository.name }}_${{ github.sha }}_${{ github.run_number }}_${{ matrix.gateway.os }}_${{ matrix.gateway.arch }}
+    artifact-digest: ${{ matrix.gateway.digest }}
+    build-type: 'github'
+    builder-id: 'github.com'
+    builder-version: '0.1.0-xyz'
+    invocation-id: ${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
+    artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
+    artifactory-api-token: ${{ secrets.ARTIFACTORY_TOKEN }}
+    artifactory-url: ${{ secrets.ARTIFACTORY_URL }}
+    artifactory-repo: 'f5-nginx-go-local-approved-dependency'
+    assertion-doc-file: assertion_${{ github.event.repository.name }}_${{ github.sha }}_${{ github.run_id }}_${{ github.run_number }}_${{ matrix.gateway.os }}_${{ matrix.gateway.arch }}.json
+    build-content-path: ${{ steps.godeps.outputs.goversionm }}
+    started-on: ${{ github.event.head_commit.timestamp || github.event.created_at }}
+    finished-on: ${{ github.event.head_commit.timestamp || github.event.created_at }}
+    log-level: 'DEBUG'
 ```
 
 #### GitHub Action Sign - Configuration
@@ -191,11 +191,11 @@ The list of required variables:
 Example:
 
 ```yaml
-    - name: Sign and Store Assertion Document
-      id: sign
-      uses: nginxinc/compliance-rules/.github/actions/sign@<git-tag>
-      with:
-        assertion-doc: ${{ steps.assertiondoc.outputs.assertion-document-path }}
+- name: Sign and Store Assertion Document
+  id: sign
+  uses: nginxinc/compliance-rules/.github/actions/sign@<git-tag>
+  with:
+    assertion-doc: ${{ steps.assertiondoc.outputs.assertion-document-path }}
 ```
 
 ## SBOM documents for Go projects
@@ -212,7 +212,7 @@ To generate SBOMs for Go binaries use GitHub Action [sbom](https://github.com/ng
 
 The code snippet below illustrates how to include SBOM step in GitHub workflow and what parameters to pass to the action.
 
-You can reference version of the SBOM Action by using `sha` (`ref` in the example below) and adding a comment with corresponding git tag, for example:
+You can reference version of the SBOM Action by using `sha` (`git_ref` in the example below) and adding a comment with corresponding git tag, for example:
 
 ```yaml
 uses: nginxinc/compliance-rules/.github/actions/sbom@0aab935582c35a00e2c671d8fe25b7fdd72a927b # v0.3.1
@@ -222,7 +222,7 @@ Below if the full example of the GitHub workflow step that generates SBOM docume
 
 ```yaml
 - name: Generate SBOM from binary
-  uses: nginxinc/compliance-rules/.github/actions/sbom@<ref> # <tag>
+  uses: nginxinc/compliance-rules/.github/actions/sbom@<git_ref> # <git_tag>
   with:
     binary-name: ${{ steps.check.outputs.binary-path }}
     product-name: ${{ github.event.repository.name }}
@@ -237,8 +237,8 @@ Below if the full example of the GitHub workflow step that generates SBOM docume
 
 where:
 
-- `ref` can be sha, git tag or branch
-- `tag` is a git tag corresponding to the sha
+- `git_ref` can be sha, git tag or branch
+- `git_tag` is a git tag corresponding to the sha
 
 The `sbom` action expects the following parameters:
 
@@ -259,7 +259,7 @@ NGINX Security Team specific secrets set at the repository level:
 
 To generate SBOMs for Go source code use GitHub Action [sbom-source](https://github.com/nginxinc/compliance-rules/tree/main/.github/actions/sbom-source).
 
-You can reference version of the SBOM Action by using `sha` (`ref` in the example below) and adding a comment with corresponding git tag, for example:
+You can reference version of the SBOM Action by using `sha` (`git_ref` in the example below) and adding a comment with corresponding git tag, for example:
 
 ```yaml
 uses: nginxinc/compliance-rules/.github/actions/sbom-source@0aab935582c35a00e2c671d8fe25b7fdd72a927b # v0.3.1
@@ -267,7 +267,7 @@ uses: nginxinc/compliance-rules/.github/actions/sbom-source@0aab935582c35a00e2c6
 
 ```yaml
 - name: Generate SBOM from binary
-  uses: nginxinc/compliance-rules/.github/actions/sbom-source@<ref> # <tag>
+  uses: nginxinc/compliance-rules/.github/actions/sbom-source@<git_ref> # <git_tag>
   with:
     product-name: ${{ github.event.repository.name }}
     release-version: ${{ github.ref_name }}
@@ -281,8 +281,8 @@ uses: nginxinc/compliance-rules/.github/actions/sbom-source@0aab935582c35a00e2c6
 
 where:
 
-- `ref` can be sha, git tag or branch
-- `tag` is a git tag corresponding to the sha
+- `git_ref` can be sha, git tag or branch
+- `git_tag` is a git tag corresponding to the sha
 
 The `sbom-source` action expects the following parameters:
 
