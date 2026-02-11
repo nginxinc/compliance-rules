@@ -1,0 +1,22 @@
+name: configure-goproxy
+author: s.breen
+description: Sets the current Go module proxy based on the presence of a private proxy URL in environment variables.
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure Go Proxy
+      id: configure-goproxy
+      shell: bash
+      run: |
+        if [[ -z "${{ env.artifactory-user }}" ]] || \
+        [[ -z "${{ env.artifactory-token }}" ]] || \
+        [[ -z "${{ env.artifactory-url-dev }}" ]] || \
+        [[ "${{ github.event.pull_request.head.repo.fork }}" == 'true' ]] ||
+        [[ "${{ startsWith(github.head_ref, 'dependabot-')}}" == 'true' ]] ; then
+          echo "No Artifactory secrets available - using direct GOPROXY"
+          GOPROXY_VALUE="direct"
+        else
+          echo "Development mode - using dev Artifactory"
+          GOPROXY_VALUE="https://${{ env.artifactory-user }}:${{ env.artifactory-token }}@${{ env.artifactory-url-dev }}"
+        fi
+        echo "GOPROXY=${GOPROXY_VALUE}" >> $GITHUB_ENV
