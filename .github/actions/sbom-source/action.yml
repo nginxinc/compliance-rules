@@ -24,27 +24,12 @@ inputs:
   az-subscription-id:
     description: Azure subscription id
     required: true
-  # az-storage-account:
-  #   description: Azure storage account for SBOM documents
-  #   required: true
   artifactory-user:
     description: Artifactory user
     required: true
   artifactory-token:
     description: Artifactory token
     required: true
-  save_in_github:
-    description: Stores SBOM document as GitHub artifact
-    required: false
-    default: "true"
-  retention_days:
-    description: How long (days) artifacts are stored in GitHub
-    required: false
-    default: "1"
-  save_in_az:
-    description: Stores SBOM docs in Azure
-    required: false
-    default: "true"
 
 runs:
   using: composite
@@ -101,7 +86,6 @@ runs:
       shell: bash
 
     - name: Store SBOM document in GitHub
-      if: inputs.save_in_github == 'true'
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
         name: ${{ steps.sign.outputs.sbomtar }}
@@ -109,7 +93,6 @@ runs:
         retention-days: 1
 
     - name: Azure login
-      if: inputs.save_in_az == 'true'
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
       with:
         client-id: ${{ inputs.az-client-id }}
@@ -117,7 +100,6 @@ runs:
         subscription-id: ${{ inputs.az-subscription-id }}
 
     - name: Setup Azure variables
-      if: inputs.save_in_az == 'true'
       id: azvars
       run: |
         echo "Setting variables for AZ upload"
@@ -126,7 +108,6 @@ runs:
       shell: bash
 
     - name: Upload SBOM document to Azure storage
-      if: inputs.save_in_az == 'true'
       uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
       with:
         inlineScript: |
