@@ -45,10 +45,6 @@ inputs:
     description: Stores SBOM docs in Azure
     required: false
     default: "true"
-  debug:
-    description: Show generated SBOM in GitHub workflow log
-    required: false
-    default: "false"
 
 runs:
   using: composite
@@ -78,12 +74,6 @@ runs:
         SYFT_SOURCE_NAME: ${{ inputs.product-name }}
         SYFT_SOURCE_VERSION: ${{ inputs.release-version }}
         SYFT_SOURCE_FILE_DIGESTS: "SHA-256,SHA-512"
-    
-    - name: Show SBOM doc in log
-      if: inputs.debug == 'true'
-      run: |
-        cat "${{ steps.sbom.outputs.sbom-doc-src }}" | jq .
-      shell: bash
 
     - name: Install Cosign
       uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
