@@ -24,9 +24,9 @@ inputs:
   az-subscription-id:
     description: Azure subscription id
     required: true
-  az-storage-account:
-    description: Azure storage account for SBOM documents
-    required: true
+  # az-storage-account:
+  #   description: Azure storage account for SBOM documents
+  #   required: true
   artifactory-user:
     description: Artifactory user
     required: true
@@ -132,7 +132,7 @@ runs:
         inlineScript: |
           echo "Uploading SBOM file ${{ steps.sign.outputs.sbomtar }} to Azure storage"
           az storage blob upload --auth-mode=login \
-            --account-name ${{ inputs.az-storage-account }} \
+            --account-name ${{ env.az-storage-account }} \
             --container-name ${{ steps.azvars.outputs.az-container-name }} \
             -f ./${{ steps.sign.outputs.sbomtar }} \
             --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
