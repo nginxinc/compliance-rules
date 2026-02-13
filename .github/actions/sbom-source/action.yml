@@ -63,8 +63,8 @@ runs:
         IFS=',' read -r -a array <<< "${{ inputs.secrets-filter }}"
           for pattern in "${array[@]}"; do
             echo "Processing pattern: $pattern"
-            for secret_name in $(az keyvault secret list --vault-name "${{ steps.vars.output.vault-sec }}" --query "[?contains(name, '$pattern')].name" -o tsv); do
-              secret_value=$(az keyvault secret show --name "$secret_name" --vault-name "${{ steps.vars.output.vault-sec }}" --query value -o tsv)
+            for secret_name in $(az keyvault secret list --vault-name "${{ steps.vars.outputs.vault-sec }}" --query "[?contains(name, '$pattern')].name" -o tsv); do
+              secret_value=$(az keyvault secret show --name "$secret_name" --vault-name "${{ steps.vars.outputs.vault-sec }}" --query value -o tsv)
               # check if value is multiline
               if [[ "$secret_value" == *$'\n'* ]]; then
                 # Mask each line for multiline secrets
