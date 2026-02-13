@@ -229,10 +229,9 @@ Below if the full example of the GitHub workflow step that generates SBOM docume
     release-version: ${{ github.ref_name }}
     artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
     artifactory-token: ${{ secrets.ARTIFACTORY_TOKEN }}
-    az-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-    az-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-    az-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    az-storage-account: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+    az-vault-client-id: ${{ secrets.AZURE_VAULT_CLIENT_ID }}
+    az-vault-tenant-id: ${{ secrets.AZURE_VAULT_TENANT_ID }}
+    az-vault-subscription-id: ${{ secrets.AZURE_VAULT_SUBSCRIPTION_ID }}
 ```
 
 where:
@@ -250,10 +249,9 @@ The `sbom` action expects the following parameters:
 
 NGINX Security Team specific secrets set at the repository level:
 
-- `az-client-id` - secrets.AZURE_CLIENT_ID
-- `az-tenant-id` - secrets.AZURE_TENANT_ID
-- `az-subscription-id` - secrets.AZURE_SUBSCRIPTION_ID
-- `az-storage-account` - secrets.AZURE_STORAGE_ACCOUNT
+- `az-vault-client-id` - secrets.AZURE_VAULT_CLIENT_ID
+- `az-vault-tenant-id` - secrets.AZURE_VAULT_TENANT_ID
+- `az-vault-subscription-id` - secrets.AZURE_VAULT_SUBSCRIPTION_ID
 
 ### Generating SBOM for Go source code
 
