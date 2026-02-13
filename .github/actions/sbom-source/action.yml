@@ -1,5 +1,5 @@
 name: 'SBOM from Source'
-description: 'Generates, signs and stores SBOM document'
+description: 'Generates, signs and stores SBOM document generated from project source code'
 
 inputs:
   product-name:
@@ -152,7 +152,7 @@ runs:
         tenant-id: ${{ env.az-tenant-id }}
         subscription-id: ${{ env.az-subscription-id }}
 
-    - name: Upload SBOM document to Azure storage
+    - name: Upload SBOM document to Azure SEC storage
       uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
       with:
         inlineScript: |
