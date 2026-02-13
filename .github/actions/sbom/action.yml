@@ -1,5 +1,5 @@
 name: 'SBOM from binary'
-description: 'Generates, signs and stores SBOM document'
+description: 'Generates, signs and stores SBOM document generated from binary'
 
 inputs:
   binary-name:
@@ -18,14 +18,14 @@ inputs:
     description: Programming language, for example golang, java, rust
     required: false
     default: golang
-  az-client-id:
-    description: Azure client id
+  az-vault-client-id:
+    description: Azure vault client ID for SEC vault
     required: true
-  az-tenant-id:
-    description: Azure tenant id
+  az-vault-tenant-id:
+    description: Azure tenant ID for SEC vault
     required: true
-  az-subscription-id:
-    description: Azure subscription id
+  az-vault-subscription-id:
+    description: Azure vault subscription id
     required: true
   az-storage-account:
     description: Azure storage account for SBOM documents
@@ -36,33 +36,73 @@ inputs:
   artifactory-token:
     description: Artifactory token
     required: true
-  save_in_github:
-    description: Stores SBOM document as GitHub artifact
-    required: false
-    default: "false"
-  retention_days:
-    description: How long (days) artifacts are stored in GitHub
-    required: false
-    default: "1"
-  save_in_az:
-    description: Stores SBOM docs in Azure
-    required: false
-    default: "true"
-  debug:
-    description: Show generated SBOM in GitHub workflow log
-    required: false
-    default: "false"
-
 
 runs:
   using: composite
   steps:
+    - name: Setup variables
+      id: vars
+      shell: bash
+      run: |
+        # Secrets to get from SEC Azure vault
+        echo "secrets-filter=az-storage-account,az-client-id,az-subscription-id,az-tenant-id" >> $GITHUB_OUTPUT
+
+        # NGINX SEC Azure vault name
+        echo "vault-sec=nginx-sec-vault" >> $GITHUB_OUTPUT
+
+        # NGINX SEC Container where we store generated SBOMs
+        echo "az-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
+        echo "az-container-path=poc/nginx-security-test" >> $GITHUB_OUTPUT
+
+    - name: Login to Azure Vault
+      uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+      with:
+        client-id: ${{ inputs.az-vault-client-id }}
+        tenant-id: ${{ inputs.az-vault-tenant-id }}
+        subscription-id: ${{ inputs.az-vault-subscription-id }}
+
+    - name: Sync Azure Vault
+      shell: bash
+      run: |
+        IFS=',' read -r -a array <<< "${{ steps.vars.outputs.secrets-filter }}"
+          for pattern in "${array[@]}"; do
+            echo "Processing pattern: $pattern"
+            for secret_name in $(az keyvault secret list --vault-name "${{ steps.vars.outputs.vault-sec }}" --query "[?contains(name, '$pattern')].name" -o tsv); do
+              secret_value=$(az keyvault secret show --name "$secret_name" --vault-name "${{ steps.vars.outputs.vault-sec }}" --query value -o tsv)
+              # check if value is multiline
+              if [[ "$secret_value" == *$'\n'* ]]; then
+                # Mask each line for multiline secrets
+                while IFS= read -r line; do
+                [[ -n "$line" ]] && echo "::add-mask::${line}"
+                done <<< "$secret_value"
+
+                # Use heredoc syntax for multiline environment variables
+                delimiter="EOF_${secret_name}_$(date +%s)"
+                {
+                  echo "${secret_name}<<${delimiter}"
+                  echo "$secret_value"
+                  echo "$delimiter"
+                } >> $GITHUB_ENV
+              else
+                echo "::add-mask::${secret_value}"
+                echo "$secret_name=$secret_value" >> $GITHUB_ENV
+              fi
+              echo "Synced secret: env.$secret_name"
+            done
+          done
+
+    - name: Logout from Azure
+      shell: bash
+      run: |
+        az logout
+
     - name: Download Syft
       id: syft
       uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
 
-    - name: Generate SBOM from Go binary
+    - name: Generate SBOM from binary
       id: sbom
+      shell: bash
       run: |
         binaryname=$(basename "${{ inputs.binary-name }}")
 
@@ -72,7 +112,6 @@ runs:
         echo "binary=${binaryname}" >> $GITHUB_OUTPUT
         echo "sbom-doc-bin=${binaryname}.bin.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
-      shell: bash
       env:
         SYFT_OUTPUT: "spdx-json"
         SYFT_ENRICH: "golang"
@@ -83,17 +122,12 @@ runs:
         SYFT_SOURCE_VERSION: ${{ inputs.release-version }}
         SYFT_SOURCE_FILE_DIGESTS: "SHA-256,SHA-512"
 
-    - name: Show SBOM doc in workflow log
-      if: inputs.debug == 'true'
-      run: |
-        cat "${{ steps.sbom.outputs.sbom-doc-bin }}" | jq .
-      shell: bash
-
     - name: Install Cosign
       uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
 
     - name: Generate checksum and sign SBOM for binary
       id: sign
+      shell: bash
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
@@ -112,10 +146,8 @@ runs:
         # Create output var
         echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
         echo $GITHUB_OUTPUT
-      shell: bash
 
     - name: Store SBOM document in GitHub
-      if: inputs.save_in_github == 'true'
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
         name: ${{ steps.sign.outputs.sbomtar }}
@@ -123,30 +155,24 @@ runs:
         retention-days: 1
 
     - name: Azure login
-      if: inputs.save_in_az == 'true'
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
       with:
-        client-id: ${{ inputs.az-client-id }}
-        tenant-id: ${{ inputs.az-tenant-id }}
-        subscription-id: ${{ inputs.az-subscription-id }}
-
-    - name: Setup Azure variables
-      if: inputs.save_in_az == 'true'
-      id: azvars
-      run: |
-        echo "Setting variables for AZ upload"
-        echo "az-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
-        cat $GITHUB_OUTPUT
-      shell: bash
+        client-id: ${{ env.az-client-id }}
+        tenant-id: ${{ env.az-tenant-id }}
+        subscription-id: ${{ env.az-subscription-id }}
 
     - name: Upload SBOM document to Azure
-      if: inputs.save_in_az == 'true'
       uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
       with:
         inlineScript: |
           echo -n "Uploading SBOM file ${{ steps.sbom.outputs.sbomtar }} to Azure storage"
           az storage blob upload --auth-mode=login \
-            --account-name ${{ inputs.az-storage-account }} \
-            --container-name ${{ steps.azvars.outputs.az-container-name }} \
+            --account-name ${{ env.az-storage-account }} \
+            --container-name ${{ steps.vars.outputs.az-container-name }} \
             -f ./${{ steps.sign.outputs.sbomtar }} \
-            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
+            --overwrite -n ${{ steps.vars.outputs.az-container-path }}/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
+
+    - name: Azure logout
+      shell: bash
+      run: |
+        az logout

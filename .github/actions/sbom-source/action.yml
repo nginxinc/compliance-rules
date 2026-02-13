@@ -22,7 +22,7 @@ inputs:
     description: Azure vault tenant id for SEC vault
     required: true
   az-vault-subscription-id:
-    description: Azure subscription id
+    description: Azure vault subscription id
     required: true
   artifactory-user:
     description: Artifactory user
