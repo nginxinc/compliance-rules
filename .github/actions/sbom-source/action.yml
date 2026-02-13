@@ -44,10 +44,10 @@ runs:
       shell: bash
       run: |
         # NGINX SEC Azure vault name
-        echo "$vault-sec=nginx-sec-vault" >> $GITHUB_OUTPUT
+        echo "vault-sec=nginx-sec-vault" >> $GITHUB_OUTPUT
 
         # NGINX SEC Container where we store generated SBOMs
-        echo "$az-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
+        echo "az-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
 
     - name: Login to Azure Vault
