@@ -266,17 +266,16 @@ uses: nginxinc/compliance-rules/.github/actions/sbom-source@0aab935582c35a00e2c6
 ```
 
 ```yaml
-- name: Generate SBOM from binary
+- name: Generate SBOM from source code
   uses: nginxinc/compliance-rules/.github/actions/sbom-source@<git_ref> # <git_tag>
   with:
     product-name: ${{ github.event.repository.name }}
     release-version: ${{ github.ref_name }}
     artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
     artifactory-token: ${{ secrets.ARTIFACTORY_TOKEN }}
-    az-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-    az-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-    az-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    az-storage-account: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+    az-vault-client-id: ${{ secrets.AZURE_VAULT_CLIENT_ID }}
+    az-vault-tenant-id: ${{ secrets.AZURE_VAULT_TENANT_ID }}
+    az-vault-subscription-id: ${{ secrets.AZURE_VAULT_SUBSCRIPTION_ID }}
 ```
 
 where:
@@ -293,7 +292,6 @@ The `sbom-source` action expects the following parameters:
 
 NGINX Security Team specific secrets set at the repository level:
 
-- `az-client-id` - secrets.AZURE_CLIENT_ID
-- `az-tenant-id` - secrets.AZURE_TENANT_ID
-- `az-subscription-id` - secrets.AZURE_SUBSCRIPTION_ID
-- `az-storage-account` - secrets.AZURE_STORAGE_ACCOUNT
+- `az-vault-client-id` - secrets.AZURE_VAULT_CLIENT_ID
+- `az-vault-tenant-id` - secrets.AZURE_VAULT_TENANT_ID
+- `az-vault-subscription-id` - secrets.AZURE_VAULT_SUBSCRIPTION_ID
