@@ -24,10 +24,6 @@ inputs:
   az-vault-subscription-id:
     description: Azure subscription id
     required: true
-  secrets-filter:
-    description: 'Filter for secrets to sync (comma-separated patterns)'
-    required: true
-    default: 'az-storage-account,az-client-id,az-subscription-id,az-tenant-id'
   artifactory-user:
     description: Artifactory user
     required: true
@@ -51,7 +47,7 @@ runs:
 
         # NGINX SEC Container where we store generated SBOMs
         echo "az-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
-        cat $GITHUB_OUTPUT
+        echo "az-container-path=poc/nginx-security-test" >> $GITHUB_OUTPUT
 
     - name: Login to Azure Vault
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
@@ -101,16 +97,12 @@ runs:
 
     - name: Generate SBOM from Go source code
       id: sbom
+      shell: bash
       run: |
         # Scan source directory and generate SBOM
         syft scan dir:. --exclude ./.git --exclude ./.github -o spdx-json > "${{ inputs.product-name }}.src.spdx.json"
-
-        # Temporary list the doc for testing purpose
-        #cat "${{ inputs.product-name }}.src.spdx.json" | jq .
-
         echo "sbom-doc-src=${{ inputs.product-name }}.src.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
-      shell: bash
       env:
         SYFT_OUTPUT: "spdx-json"
         SYFT_ENRICH: "golang"
@@ -126,6 +118,7 @@ runs:
 
     - name: Generate checksum and sign SBOM for binary
       id: sign
+      shell: bash
       run: |
         cosign_binary=${COSIGN_BIN:-"cosign"}
 
@@ -144,8 +137,7 @@ runs:
         # Create output var
         echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
         echo $GITHUB_OUTPUT
-      shell: bash
-
+      
     - name: Store SBOM document in GitHub
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
@@ -169,7 +161,7 @@ runs:
             --account-name ${{ env.az-storage-account }} \
             --container-name ${{ steps.vars.outputs.az-container-name }} \
             -f ./${{ steps.sign.outputs.sbomtar }} \
-            --overwrite -n poc/nginx-security-test/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
+            --overwrite -n ${{ steps.vars.outputs.az-container-path }}/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
 
     - name: Azure logout
       shell: bash
