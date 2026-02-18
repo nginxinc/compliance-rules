@@ -229,9 +229,9 @@ Below if the full example of the GitHub workflow step that generates SBOM docume
     release-version: ${{ github.ref_name }}
     artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
     artifactory-token: ${{ secrets.ARTIFACTORY_TOKEN }}
-    az-vault-client-id: ${{ secrets.AZURE_VAULT_CLIENT_ID }}
-    az-vault-tenant-id: ${{ secrets.AZURE_VAULT_TENANT_ID }}
-    az-vault-subscription-id: ${{ secrets.AZURE_VAULT_SUBSCRIPTION_ID }}
+    az-vault-client-id: ${{ secrets.AZ_VAULT_SEC_CLIENT_ID }}
+    az-vault-tenant-id: ${{ secrets.AZ_VAULT_SEC_TENANT_ID }}
+    az-vault-subscription-id: ${{ secrets.AZ_VAULT_SEC_SUBSCRIPTION_ID }}
 ```
 
 where:
@@ -249,9 +249,9 @@ The `sbom` action expects the following parameters:
 
 NGINX Security Team specific secrets set at the repository level:
 
-- `az-vault-client-id` - secrets.AZURE_VAULT_CLIENT_ID
-- `az-vault-tenant-id` - secrets.AZURE_VAULT_TENANT_ID
-- `az-vault-subscription-id` - secrets.AZURE_VAULT_SUBSCRIPTION_ID
+- `az-vault-client-id` - secrets.AZ_VAULT_SEC_CLIENT_ID
+- `az-vault-tenant-id` - secrets.AZ_VAULT_SEC_TENANT_ID
+- `az-vault-subscription-id` - secrets.AZ_VAULT_SEC_SUBSCRIPTION_ID
 
 ### Generating SBOM for Go source code
 
@@ -271,9 +271,9 @@ uses: nginxinc/compliance-rules/.github/actions/sbom-source@0aab935582c35a00e2c6
     release-version: ${{ github.ref_name }}
     artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
     artifactory-token: ${{ secrets.ARTIFACTORY_TOKEN }}
-    az-vault-client-id: ${{ secrets.AZURE_VAULT_CLIENT_ID }}
-    az-vault-tenant-id: ${{ secrets.AZURE_VAULT_TENANT_ID }}
-    az-vault-subscription-id: ${{ secrets.AZURE_VAULT_SUBSCRIPTION_ID }}
+    az-vault-client-id: ${{ secrets.AZ_VAULT_SEC_CLIENT_ID }}
+    az-vault-tenant-id: ${{ secrets.AZ_VAULT_SEC_TENANT_ID }}
+    az-vault-subscription-id: ${{ secrets.AZ_VAULT_SEC_SUBSCRIPTION_ID }}
 ```
 
 where:
@@ -290,6 +290,6 @@ The `sbom-source` action expects the following parameters:
 
 NGINX Security Team specific secrets set at the repository level:
 
-- `az-vault-client-id` - secrets.AZURE_VAULT_CLIENT_ID
-- `az-vault-tenant-id` - secrets.AZURE_VAULT_TENANT_ID
-- `az-vault-subscription-id` - secrets.AZURE_VAULT_SUBSCRIPTION_ID
+- `az-vault-client-id` - secrets.AZ_VAULT_SEC_CLIENT_ID
+- `az-vault-tenant-id` - secrets.AZ_VAULT_SEC_TENANT_ID
+- `az-vault-subscription-id` - secrets.AZ_VAULT_SEC_SUBSCRIPTION_ID
