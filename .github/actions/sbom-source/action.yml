@@ -40,14 +40,15 @@ runs:
       shell: bash
       run: |
         # Secrets to get from SEC Azure vault
-        echo "secrets-filter=az-storage-account,az-client-id,az-subscription-id,az-tenant-id" >> $GITHUB_OUTPUT
+        echo "secrets-filter=az-sec-storage-account,az-sec-client-id,az-sec-subscription-id,az-sec-tenant-id" >> $GITHUB_OUTPUT
 
         # NGINX SEC Azure vault name
         echo "vault-sec=nginx-sec-vault" >> $GITHUB_OUTPUT
 
         # NGINX SEC Container where we store generated SBOMs
-        echo "az-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
-        echo "az-container-path=poc/nginx-security-test" >> $GITHUB_OUTPUT
+        echo "az-sec-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
+        echo "az-sec-container-path=poc/nginx-security-test" >> $GITHUB_OUTPUT
+        cat $GITHUB_OUTPUT
 
     - name: Login to Azure Vault
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
@@ -148,9 +149,9 @@ runs:
     - name: Azure login
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
       with:
-        client-id: ${{ env.az-client-id }}
-        tenant-id: ${{ env.az-tenant-id }}
-        subscription-id: ${{ env.az-subscription-id }}
+        client-id: ${{ env.az-sec-client-id }}
+        tenant-id: ${{ env.az-sec-tenant-id }}
+        subscription-id: ${{ env.az-sec-subscription-id }}
 
     - name: Upload SBOM document to Azure SEC storage
       uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2.2.0
@@ -158,10 +159,10 @@ runs:
         inlineScript: |
           echo "Uploading SBOM file ${{ steps.sign.outputs.sbomtar }} to Azure storage"
           az storage blob upload --auth-mode=login \
-            --account-name ${{ env.az-storage-account }} \
-            --container-name ${{ steps.vars.outputs.az-container-name }} \
+            --account-name ${{ env.az-sec-storage-account }} \
+            --container-name ${{ steps.vars.outputs.az-sec-container-name }} \
             -f ./${{ steps.sign.outputs.sbomtar }} \
-            --overwrite -n ${{ steps.vars.outputs.az-container-path }}/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
+            --overwrite -n ${{ steps.vars.outputs.az-sec-container-path }}/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
 
     - name: Azure logout
       shell: bash
