@@ -40,7 +40,7 @@ runs:
       shell: bash
       run: |
         # Secrets to get from SEC Azure vault
-        echo "secrets-filter=az-storage-account,az-sec-client-id,az-sec-subscription-id,az-sec-tenant-id" >> $GITHUB_OUTPUT
+        echo "secrets-filter=az-sec-storage-account,az-sec-client-id,az-sec-subscription-id,az-sec-tenant-id" >> $GITHUB_OUTPUT
 
         # NGINX SEC Azure vault name
         echo "vault-sec=nginx-sec-vault" >> $GITHUB_OUTPUT
@@ -159,7 +159,7 @@ runs:
         inlineScript: |
           echo "Uploading SBOM file ${{ steps.sign.outputs.sbomtar }} to Azure storage"
           az storage blob upload --auth-mode=login \
-            --account-name ${{ env.az-storage-account }} \
+            --account-name ${{ env.az-sec-storage-account }} \
             --container-name ${{ steps.vars.outputs.az-sec-container-name }} \
             -f ./${{ steps.sign.outputs.sbomtar }} \
             --overwrite -n ${{ steps.vars.outputs.az-sec-container-path }}/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
