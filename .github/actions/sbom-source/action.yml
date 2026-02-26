@@ -40,7 +40,7 @@ runs:
       shell: bash
       run: |
         # Secrets to get from SEC Azure vault
-        echo "secrets-filter=az-storage-account,az-sec-client-id,az-sec-subscription-id,az-tenant-id" >> $GITHUB_OUTPUT
+        echo "secrets-filter=az-storage-account,az-sec-client-id,az-sec-subscription-id,az-sec-tenant-id" >> $GITHUB_OUTPUT
 
         # NGINX SEC Azure vault name
         echo "vault-sec=nginx-sec-vault" >> $GITHUB_OUTPUT
@@ -150,7 +150,7 @@ runs:
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
       with:
         client-id: ${{ env.az-sec-client-id }}
-        tenant-id: ${{ env.az-tenant-id }}
+        tenant-id: ${{ env.az-sec-tenant-id }}
         subscription-id: ${{ env.az-sec-subscription-id }}
 
     - name: Upload SBOM document to Azure SEC storage
