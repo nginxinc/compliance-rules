@@ -1,0 +1,57 @@
+name: Agent Generate SBOM from source
+
+on:
+  ## =========
+  ## For testing only 
+  #schedule:
+  #  - cron: '0 2 * * *'  # Runs daily at 2:00 AM UTC
+  ## =========
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: string
+        required: false
+        default: main
+
+permissions:
+  contents: read
+  id-token: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-22.04
+    if: ${{ !github.event.pull_request.head.repo.fork && !startsWith(github.head_ref, 'dependabot-')}}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      GOPROXY: "https://${{ secrets.ARTIFACTORY_USER }}:${{ secrets.ARTIFACTORY_TOKEN }}@azr.artifactory.f5net.com/artifactory/api/go/f5-nginx-go-local-approved-dependency"
+
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      with:
+        repository: nginx/agent
+        path: agent
+        token: ${{ secrets.GH_PAT }}
+        ref: main
+        fetch-tags: true
+
+    # - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+    #   with:
+    #     go-version-file: 'go.mod'
+    #     cache: false
+
+    # - name: Generate SBOM from source
+    #   uses: nginxinc/compliance-rules/.github/actions/sbom-source@chore/sbom-src
+    #   with:
+    #     product-name: ${{ github.event.repository.name }}
+    #     release-version: ${{ github.ref_name }}
+    #     artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
+    #     artifactory-token: ${{ secrets.ARTIFACTORY_TOKEN }}
+    #     az-vault-client-id: ${{ secrets.AZ_VAULT_SEC_CLIENT_ID }}
+    #     az-vault-tenant-id: ${{ secrets.AZ_VAULT_SEC_TENANT_ID }}
+    #     az-vault-subscription-id: ${{ secrets.AZ_VAULT_SEC_SUBSCRIPTION_ID }}
