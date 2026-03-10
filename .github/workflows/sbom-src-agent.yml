@@ -42,7 +42,7 @@ jobs:
         cache: false
 
     - name: Generate SBOM from source
-      uses: nginxinc/compliance-rules/.github/actions/sbom-source@main
+      uses: ./.github/actions/sbom-source
       with:
         product-name: agent
         release-version: main
