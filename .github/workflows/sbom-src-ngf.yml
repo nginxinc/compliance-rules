@@ -1,4 +1,4 @@
-name: Agent SBOM from source code
+name: NGF SBOM from source code
 
 on:
   ## =========
@@ -35,25 +35,25 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-    - name: Checkout Agent repo
+    - name: Checkout NGF repo
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
-        repository: nginx/agent
-        path: agent
+        repository: nginx/nginx-gateway-fabric
+        path: ngf
         ref: main
         fetch-tags: true
 
     - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
       with:
-        go-version-file: 'agent/go.mod'
+        go-version-file: 'ngf/go.mod'
         cache: false
 
     - name: Generate SBOM from source
-      uses: ./.github/actions/sbom-agent
+      uses: ./.github/actions/sbom-ngf
       with:
-        product-name: agent
+        product-name: ngf
         release-version: main
-        checkout-path: agent
+        checkout-path: ngf
         artifactory-user: ${{ secrets.ARTIFACTORY_USER }}
         artifactory-token: ${{ secrets.ARTIFACTORY_TOKEN }}
         az-vault-client-id: ${{ secrets.AZ_VAULT_SEC_CLIENT_ID }}
