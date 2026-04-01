@@ -1,5 +1,13 @@
 # Compliance-rules
 
+## SBOM Workflows
+
+[![Agent SBOM from source code](https://github.com/nginxinc/compliance-rules/actions/workflows/sbom-src-agent.yml/badge.svg)](https://github.com/nginxinc/compliance-rules/actions/workflows/sbom-src-agent.yml)
+[![NGF SBOM from source code](https://github.com/nginxinc/compliance-rules/actions/workflows/sbom-src-ngf.yml/badge.svg)](https://github.com/nginxinc/compliance-rules/actions/workflows/sbom-src-ngf.yml)
+[![NIC SBOM from source code](https://github.com/nginxinc/compliance-rules/actions/workflows/sbom-src-nic.yml/badge.svg)](https://github.com/nginxinc/compliance-rules/actions/workflows/sbom-src-nic.yml)
+
+---
+
 Compliance repo with main rules for SCA and SAST scan
 
 This repository provides common GitHub Actions and GitHub workflows for code scans and generating SBOM documents.
@@ -10,6 +18,7 @@ This repository provides common GitHub Actions and GitHub workflows for code sca
 - [Configure CodeQL workflow](#configure-codeql-workflow-in-a-github-repository)
 - [Configure Assertion Document workflow](#configure-assertion-document-workflow)
 - [Configure SBOM workflow for Go projects](#sbom-documents-for-go-projects)
+
 
 ## Configure Mend workflow in a GitHub repository
 
