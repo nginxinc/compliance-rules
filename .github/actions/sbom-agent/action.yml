@@ -104,7 +104,7 @@ runs:
       shell: bash
       run: |
         # Scan source directory and generate SBOM
-        syft scan dir:${{ inputs.checkout-path }} --exclude ./.git --exclude ./.github -o spdx-json > "${{ inputs.product-name }}.src.spdx.json"
+        syft scan dir:${{ inputs.checkout-path }} --exclude ./.git --exclude ./.github --exclude ./docs -o spdx-json > "${{ inputs.product-name }}.src.spdx.json"
         echo "sbom-doc-src=${{ inputs.product-name }}.src.spdx.json" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
       env:
@@ -140,8 +140,10 @@ runs:
 
         # Create output var
         echo "sbomtar=${tarball_name}" >> $GITHUB_OUTPUT
-        echo $GITHUB_OUTPUT
-      
+        echo "sbom_bundle=${bundle_file}" >> $GITHUB_OUTPUT
+        echo "sbom_doc=${sbomdoc}" >> $GITHUB_OUTPUT
+        echo "sbom_checksum=${checksum_file}" >> $GITHUB_OUTPUT
+
     - name: Store SBOM document in GitHub
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
@@ -161,11 +163,14 @@ runs:
       with:
         inlineScript: |
           echo "Uploading SBOM file ${{ steps.sign.outputs.sbomtar }} to Azure storage"
+          files=(${{ steps.sign.outputs.sbom_bundle}} ${{ steps.sign.outputs.sbom_doc}} ${{ steps.sign.outputs.sbom_checksum}})
+          for file in "${files[@]}"; do
           az storage blob upload --auth-mode=login \
             --account-name ${{ env.az-sec-storage-account }} \
             --container-name ${{ steps.vars.outputs.az-sec-container-name }} \
-            -f ./${{ steps.sign.outputs.sbomtar }} \
-            --overwrite -n ${{ steps.vars.outputs.az-sec-container-path }}/${{ inputs.product-name }}/${{ inputs.release-version }}/${{ steps.sign.outputs.sbomtar }}
+            -f ./$file \
+            --overwrite -n ${{ steps.vars.outputs.az-sec-container-path }}/${{ inputs.product-name }}/${{ inputs.release-version }}/$file
+          done
 
     - name: Azure logout
       shell: bash
