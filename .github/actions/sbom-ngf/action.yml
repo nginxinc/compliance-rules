@@ -49,8 +49,8 @@ runs:
         echo "vault-sec=nginx-sec-vault" >> $GITHUB_OUTPUT
 
         # NGINX SEC Container where we store generated SBOMs
-        echo "az-sec-container-name=cylon-indigo-generic-release-sbom" >> $GITHUB_OUTPUT
-        echo "az-sec-container-path=poc/nginx-security-test" >> $GITHUB_OUTPUT
+        echo "az-sec-container-name=cylon-indigo-generic-source-code-sbom" >> $GITHUB_OUTPUT
+        echo "az-sec-container-path=product" >> $GITHUB_OUTPUT
         cat $GITHUB_OUTPUT
 
     - name: Login to Azure Vault
